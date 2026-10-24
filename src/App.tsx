@@ -1,175 +1,74 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { AudioProvider, useAudio } from './context/AudioContext';
-import { Header } from './components/Header';
 import { DiscGallery } from './components/DiscGallery';
-import { SongDetails } from './components/SongDetails';
 import { TrackIndex } from './components/TrackIndex';
 import { NowPlayingDock } from './components/NowPlayingDock';
-import { Compass, Keyboard } from 'lucide-react';
 import './App.css';
-import './reference-theme.css';
 
-const MainAppContent: React.FC = () => {
-  const {
-    tracks,
-    playingTrack,
-    playingIndex,
-    playbackState,
-    isPlaying,
-    playTrack,
-    togglePlayPause
-  } = useAudio();
-
-  const [browsingIndex, setBrowsingIndex] = useState<number>(0);
-  const [isTrackIndexOpen, setIsTrackIndexOpen] = useState<boolean>(false);
-  const [prefersReducedMotion, setPrefersReducedMotion] = useState<boolean>(false);
-
-  // Check reduced motion preference
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    setPrefersReducedMotion(mq.matches);
-    const listener = (e: MediaQueryListEvent) => setPrefersReducedMotion(e.matches);
-    mq.addEventListener('change', listener);
-    return () => mq.removeEventListener('change', listener);
-  }, []);
-
-  // Spacebar keyboard shortcut for Play/Pause
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
-      if (e.key === ' ' || e.code === 'Space') {
-        e.preventDefault();
-        if (playingIndex === -1) {
-          playTrack(tracks[browsingIndex], browsingIndex);
-        } else {
-          togglePlayPause();
-        }
+function MusicCollection() {
+  const audio=useAudio();
+  const [browsingIndex,setBrowsingIndex]=useState(0);
+  const [indexOpen,setIndexOpen]=useState(false);
+  const [reducedMotion,setReducedMotion]=useState(()=>window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const track=audio.tracks[browsingIndex];
+  const isSelectedPlaying=audio.playingIndex===browsingIndex&&audio.isPlaying;
+  const browse=useCallback((index:number)=>setBrowsingIndex(Math.max(0,Math.min(audio.tracks.length-1,index))),[audio.tracks.length]);
+  useEffect(()=>{
+    const mq=window.matchMedia('(prefers-reduced-motion: reduce)');
+    const change=()=>setReducedMotion(mq.matches);
+    mq.addEventListener('change',change);return()=>mq.removeEventListener('change',change);
+  },[]);
+  useEffect(()=>{
+    const key=(event:KeyboardEvent)=>{
+      if(indexOpen||event.altKey||event.metaKey||event.ctrlKey)return;
+      const target=event.target as HTMLElement;
+      if(target.closest('input, textarea, select, [contenteditable="true"]'))return;
+      if(event.key==='ArrowRight'){event.preventDefault();browse(browsingIndex+1);}
+      if(event.key==='ArrowLeft'){event.preventDefault();browse(browsingIndex-1);}
+      if(event.key==='Enter'||event.code==='Space'){
+        if(target.closest('button,a'))return;
+        event.preventDefault();audio.playTrack(track,browsingIndex);
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [playingIndex, browsingIndex, tracks, playTrack, togglePlayPause]);
-
-  const currentBrowsedTrack = tracks[browsingIndex] || tracks[0];
-  const isBrowsedTrackPlaying = browsingIndex === playingIndex && isPlaying;
-  const isBrowsedTrackPaused = browsingIndex === playingIndex && playbackState === 'paused';
-
-  const handleSelectTrackFromGallery = (track: typeof currentBrowsedTrack, index: number) => {
-    playTrack(track, index);
-  };
-
-  const handleSelectTrackFromIndex = (index: number, andPlay?: boolean) => {
-    setBrowsingIndex(index);
-    if (andPlay) {
-      playTrack(tracks[index], index);
-    }
-  };
-
-  const handleJumpToPlaying = () => {
-    if (playingIndex >= 0 && playingIndex < tracks.length) {
-      setBrowsingIndex(playingIndex);
-    }
-  };
-
-  return (
-    <div
-      className="katosi-experience-wrapper"
-      style={{
-        // Dynamic ambient tint from active track's accent palette
-        ['--track-ambient-color' as any]: currentBrowsedTrack.accentColor || '#3d5a80'
-      }}
-    >
-      {/* Dynamic Ambient Background Glow & Film Grain */}
-      <div className="ambient-glow" />
-      <div className="ambient-radial-spot" />
-      <div className="film-grain-layer" />
-
-      {/* Header */}
-      <Header
-        onOpenIndex={() => setIsTrackIndexOpen(true)}
-        trackCount={tracks.length}
-        activeTrackTitle={playingTrack?.title}
-        isPlaying={isPlaying}
-      />
-
-      {/* Main Experience Layout */}
-      <main className="katosi-main-container">
-        {/* Left Side: Song Metadata & Typography Hierarchy */}
-        <div className="katosi-info-column">
-          <SongDetails
-            track={currentBrowsedTrack}
-            index={browsingIndex}
-            totalTracks={tracks.length}
-            isCurrentlyPlaying={isBrowsedTrackPlaying}
-            isCurrentlyPaused={isBrowsedTrackPaused}
-            onPlayToggle={() => playTrack(currentBrowsedTrack, browsingIndex)}
-            onJumpToPlaying={handleJumpToPlaying}
-            playingTrackTitle={playingTrack?.title}
-          />
-        </div>
-
-        {/* Right / Center: Interactive 3D Disc Gallery */}
-        <div className="katosi-disc-column">
-          <DiscGallery
-            tracks={tracks}
-            browsingIndex={browsingIndex}
-            playingIndex={playingIndex}
-            isPlaying={isPlaying}
-            isPaused={playbackState === 'paused'}
-            onBrowse={(idx) => setBrowsingIndex(idx)}
-            onSelectTrack={handleSelectTrackFromGallery}
-            reducedMotion={prefersReducedMotion}
-          />
-        </div>
-      </main>
-
-      <div className="collection-caption" aria-live="polite">
-        <span>THE KATOSI COLLECTION · {String(browsingIndex + 1).padStart(2, '0')} / 10</span>
-        <p>Sound reflects you.</p>
-        <button onClick={() => playTrack(currentBrowsedTrack, browsingIndex)}>{isBrowsedTrackPlaying ? 'Pause the record' : 'Click a disc to listen'} ↗</button>
-      </div>
-      {/* Subtle Bottom Navigation Hints */}
-      <footer className="katosi-footer">
-        <div className="footer-hints">
-          <span className="footer-hint-item">
-            <Keyboard size={14} />
-            <span>Use Left / Right arrow keys to browse</span>
-          </span>
-          <span className="footer-hint-separator">•</span>
-          <span className="footer-hint-item">
-            <Compass size={14} />
-            <span>Click any disc or song to play</span>
-          </span>
-        </div>
-        <div className="footer-branding">
-          <span>KATOSI © {new Date().getFullYear()} — Sound Reflects You</span>
-        </div>
+    window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key);
+  },[audio,browse,browsingIndex,indexOpen,track]);
+  return <div className="collection-page">
+    <main className="collection-stage" aria-label="KATOSI music collection">
+      <header className="archive-nav" aria-label="Main navigation">
+        <a className="archive-wordmark" href="/" aria-label="KATOSI home">KATOSI</a>
+        <span className="archive-nav-active">Music</span>
+        <span className="archive-nav-secondary">Collection</span>
+        <button className="archive-index-toggle" onClick={()=>setIndexOpen(true)} aria-expanded={indexOpen}>Index <span aria-hidden="true">⌄</span></button>
+      </header>
+      <section key={track.id} className="track-credits" aria-label={`Details for ${track.title}`}>
+        <h1>{track.title}</h1>
+        <dl>
+          <div><dt>COMPOSED BY</dt><dd>{track.composer}</dd></div>
+          <div><dt>YEAR</dt><dd>{track.year}</dd></div>
+          <div><dt>PERFORMED BY</dt><dd>{track.artists.map(artist=><span key={artist}>{artist}</span>)}</dd></div>
+        </dl>
+      </section>
+      <button className="sr-only accessible-play" onClick={()=>audio.playTrack(track,browsingIndex)}>{isSelectedPlaying?'Pause':'Play'} {track.title}</button>
+      <DiscGallery tracks={audio.tracks} browsingIndex={browsingIndex} playingIndex={audio.playingIndex}
+        isPlaying={audio.isPlaying} isPaused={audio.playbackState==='paused'} reducedMotion={reducedMotion}
+        onBrowse={browse} onSelectTrack={audio.playTrack}/>
+      <section className="record-annotations" aria-label="Selected record information" key={`${track.id}-notes`}>
+        <div className="record-annotation"><span className="annotation-mark" aria-hidden="true">✦ ✦ ✦</span><span className="annotation-label">THE ORIGINAL SOUNDTRACK</span><p>{track.albumOrFilm}</p></div>
+        <div className="record-annotation"><span className="annotation-mark annotation-play" aria-hidden="true">{isSelectedPlaying?'Ⅱ':'▷'}</span><span className="annotation-label">A KATOSI SELECTION</span><button className="annotation-action" onClick={()=>audio.playTrack(track,browsingIndex)}>{isSelectedPlaying?'Pause this\nrecord':'Some songs\nstay with you'}</button></div>
+      </section>
+      <footer className="archive-footer">
+        <span className="archive-instructions">Drag or scroll to explore <span>↗</span></span>
+        <nav className="record-navigation" aria-label="Browse records">
+          <button onClick={()=>browse(browsingIndex-1)} disabled={browsingIndex===0} aria-label="Previous compact disc">←</button>
+          <span>{String(browsingIndex+1).padStart(2,'0')} <span className="record-counter-divider">/</span> {String(audio.tracks.length).padStart(2,'0')}</span>
+          <button onClick={()=>browse(browsingIndex+1)} disabled={browsingIndex===audio.tracks.length-1} aria-label="Next compact disc">→</button>
+        </nav>
+        <span className="archive-signature">Sound reflects you.</span>
       </footer>
-
-      {/* Persistent Compliant YouTube Player Dock */}
-      <NowPlayingDock />
-
-      {/* Track Index Drawer / Modal */}
-      <TrackIndex
-        isOpen={isTrackIndexOpen}
-        onClose={() => setIsTrackIndexOpen(false)}
-        tracks={tracks}
-        browsingIndex={browsingIndex}
-        playingIndex={playingIndex}
-        isPlaying={isPlaying}
-        isPaused={playbackState === 'paused'}
-        onSelectTrack={handleSelectTrackFromIndex}
-      />
-    </div>
-  );
-};
-
-export const App: React.FC = () => {
-  return (
-    <AudioProvider>
-      <MainAppContent />
-    </AudioProvider>
-  );
-};
-
-export default App;
+    </main>
+    <NowPlayingDock/>
+    <TrackIndex isOpen={indexOpen} onClose={()=>setIndexOpen(false)} tracks={audio.tracks} browsingIndex={browsingIndex} playingIndex={audio.playingIndex} isPlaying={audio.isPlaying} isPaused={audio.playbackState==='paused'} onSelectTrack={(index,andPlay)=>{browse(index);if(andPlay){audio.playTrack(audio.tracks[index],index);setIndexOpen(false);}}}/>
+    <div className="paper-grain" aria-hidden="true"/>
+  </div>;
+}
+export default function App(){return <AudioProvider><MusicCollection/></AudioProvider>;}

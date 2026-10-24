@@ -56,8 +56,11 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const playingTrack = playingIndex >= 0 && playingIndex < TRACKS.length ? TRACKS[playingIndex] : null;
   const isPlaying = playbackState === 'playing';
 
-  // Initialize YouTube IFrame API
+  const hasRequestedPlayback = playingIndex >= 0;
+
+  // Load the online player only after a visitor selects a record.
   useEffect(() => {
+    if (!hasRequestedPlayback) return;
     let isCancelled = false;
 
     const initPlayer = () => {
@@ -69,9 +72,9 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       try {
         playerRef.current = new window.YT.Player('katosi-youtube-iframe-target', {
-          height: '150',
-          width: '260',
-          videoId: TRACKS[0].youtubeVideoId,
+          height: '200',
+          width: '340',
+          videoId: requestedTrackRef.current?.track.youtubeVideoId,
           playerVars: {
             autoplay: 0,
             controls: 1,
@@ -82,6 +85,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             origin: window.location.origin
           },
           events: {
+            onAutoplayBlocked: () => { if (!isCancelled) {setAutoplayBlocked(true);setPlaybackState('paused');} },
             onReady: (event: any) => {
               if (isCancelled) return;
               setIsPlayerReady(true);
@@ -172,8 +176,10 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     return () => {
       isCancelled = true;
+      playerRef.current?.destroy?.();
+      playerRef.current = null;
     };
-  }, []);
+  }, [hasRequestedPlayback]);
 
   // Poll current playback time when playing
   useEffect(() => {
@@ -218,6 +224,9 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     // Switching to a new track
+    setCurrentTime(0);
+    setDuration(0);
+    setAutoplayBlocked(false);
     setPlayingIndex(index);
 
     if (!isPlayerReady || !playerRef.current) {

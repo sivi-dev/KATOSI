@@ -1,238 +1,235 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import * as THREE from 'three';
 import type { Track } from '../data/tracks';
-import { CompactDisc } from './CompactDisc';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import './DiscGallery.css';
 
-interface DiscGalleryProps {
-  tracks: Track[];
-  browsingIndex: number;
-  playingIndex: number;
-  isPlaying: boolean;
-  isPaused: boolean;
+interface Props {
+  tracks: Track[]; browsingIndex: number; playingIndex: number;
+  isPlaying: boolean; isPaused: boolean; reducedMotion?: boolean;
   onBrowse: (index: number) => void;
   onSelectTrack: (track: Track, index: number) => void;
-  reducedMotion?: boolean;
+}
+const clampIndex = (value: number, count: number) => Math.max(0, Math.min(count - 1, value));
+
+// The sleeve is printed on a real annulus: the spindle hole is geometry, not paint.
+function sleeveTexture(track: Track, image?: HTMLImageElement) {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = image ? 1536 : 512;
+  const ctx = canvas.getContext('2d')!;
+  ctx.scale(canvas.width/1536,canvas.height/1536);
+  ctx.fillStyle = track.accentColor || '#555b58';
+  ctx.fillRect(0, 0, 1536, 1536);
+  if (image) {
+    const side = Math.min(image.naturalWidth, image.naturalHeight);
+    ctx.drawImage(image, (image.naturalWidth-side)/2, (image.naturalHeight-side)/2, side, side, 0, 0, 1536, 1536);
+  } else {
+    ctx.fillStyle = '#eee9db';
+    ctx.textAlign = 'center';
+    ctx.font = '76px Georgia';
+    ctx.fillText(track.title, 768, 450, 1200);
+  }
+  // Fine catalogue lettering follows the outer edge, like a physical release.
+  const imprint = `KATOSI  •  ${track.title.toUpperCase()}  •  ${track.year}  •  ${track.label.toUpperCase()}  •  COMPACT DISC DIGITAL AUDIO  •  `;
+  ctx.save(); ctx.translate(768,768);
+  ctx.font = '13px Arial'; ctx.textAlign = 'center';
+  for (let i=0;i<imprint.length;i++) {
+    const a = (i / imprint.length) * Math.PI * 2;
+    ctx.save(); ctx.rotate(a); ctx.translate(0,-727);
+    ctx.fillStyle='rgba(255,255,245,.78)';
+    ctx.shadowColor='rgba(0,0,0,.8)'; ctx.shadowBlur=3;
+    ctx.fillText(imprint[i],0,0); ctx.restore();
+  }
+  ctx.restore();
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 8;
+  return texture;
 }
 
-export const DiscGallery: React.FC<DiscGalleryProps> = ({
-  tracks,
-  browsingIndex,
-  playingIndex,
-  isPlaying,
-  isPaused,
-  onBrowse,
-  onSelectTrack,
-  reducedMotion = false
-}) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const touchStartX = useRef<number | null>(null);
-  const touchStartY = useRef<number | null>(null);
-  const isSwiping = useRef<boolean>(false);
-  const [windowWidth, setWindowWidth] = useState<number>(
-    typeof window !== 'undefined' ? window.innerWidth : 1200
-  );
+function hubTexture() {
+  const canvas=document.createElement('canvas');canvas.width=canvas.height=512;
+  const ctx=canvas.getContext('2d')!;
+  const gradient=ctx.createRadialGradient(256,256,0,256,256,256);
+  [[0,'#d8dae0'],[.555,'#b7bbc6'],[.568,'#797e8d'],[.6,'#d6d9df'],[.64,'#e4e5e9'],[.68,'#b7bdc9'],[.78,'#a4aab6'],[.8,'#d0d4dc'],[.85,'#b9bfca'],[.91,'#949ba9'],[.965,'#b7bdc7'],[1,'#858d9c']].forEach(([stop,color])=>gradient.addColorStop(stop as number,color as string));
+  ctx.fillStyle=gradient;ctx.fillRect(0,0,512,512);
+  const shine=ctx.createLinearGradient(0,0,512,512);shine.addColorStop(0,'#ffffff00');shine.addColorStop(.4,'#ffffff24');shine.addColorStop(.6,'#ffffff00');shine.addColorStop(1,'#ffffff12');
+  ctx.fillStyle=shine;ctx.fillRect(0,0,512,512);
+  const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;return texture;
+}
+
+export function DiscGallery(props: Props) {
+  const host = useRef<HTMLDivElement>(null);
+  const live = useRef(props);
+  const movement = useRef({value: props.browsingIndex, target: props.browsingIndex, speed: 0});
+  const [fallback, setFallback] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  useEffect(() => { live.current = props; });
 
   useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    const m = movement.current;
+    m.target = props.browsingIndex;
+  }, [props.browsingIndex, props.tracks.length]);
 
-  const discSize = windowWidth < 600 ? 310 : Math.min(windowWidth * 0.43, 620);
-  const spacing = windowWidth < 600 ? 300 : discSize * 0.98;
-
-  // Touch gesture handling
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    isSwiping.current = false;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (touchStartX.current === null || touchStartY.current === null) return;
-    const deltaX = e.touches[0].clientX - touchStartX.current;
-    const deltaY = e.touches[0].clientY - touchStartY.current;
-
-    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
-      isSwiping.current = true;
-    }
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!isSwiping.current || touchStartX.current === null) {
-      touchStartX.current = null;
-      touchStartY.current = null;
-      return;
-    }
-
-    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
-    const threshold = 40;
-
-    if (deltaX > threshold) {
-      // Swipe right -> previous disc
-      if (browsingIndex > 0) {
-        onBrowse(browsingIndex - 1);
-      }
-    } else if (deltaX < -threshold) {
-      // Swipe left -> next disc
-      if (browsingIndex < tracks.length - 1) {
-        onBrowse(browsingIndex + 1);
-      }
-    }
-
-    touchStartX.current = null;
-    touchStartY.current = null;
-    isSwiping.current = false;
-  };
-
-  // Keyboard navigation
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Avoid intercepting inputs if user is typing in any input field
-      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement)?.tagName)) return;
+    const element = host.current!;
+    let renderer: THREE.WebGLRenderer;
+    try { renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, powerPreference:'high-performance'}); }
+    catch { queueMicrotask(() => setFallback(true)); return; }
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.setClearColor(0,0);
+    renderer.domElement.setAttribute('aria-hidden','true');
+    element.prepend(renderer.domElement);
+    const scene = new THREE.Scene();
+    const camera = new THREE.OrthographicCamera(-640,640,360,-360,1,4000);
+    camera.position.z = 1600;
+    const ambient = new THREE.HemisphereLight(0xffffff,0xb5b2b7,2.3);
+    scene.add(ambient);
+    const key = new THREE.DirectionalLight(0xffffff,2.8);
+    key.position.set(-600,700,1500); scene.add(key);
+    const fill = new THREE.DirectionalLight(0xd4d8ef,1.1);
+    fill.position.set(900,-300,600); scene.add(fill);
 
-      if (e.key === 'ArrowLeft') {
-        e.preventDefault();
-        if (browsingIndex > 0) onBrowse(browsingIndex - 1);
-      } else if (e.key === 'ArrowRight') {
-        e.preventDefault();
-        if (browsingIndex < tracks.length - 1) onBrowse(browsingIndex + 1);
+    const resources: (THREE.BufferGeometry | THREE.Material | THREE.Texture)[] = [];
+    const ring = (inner:number,outer:number,z:number,material:THREE.Material,parent:THREE.Group) => {
+      const geo = new THREE.RingGeometry(inner,outer,192);
+      const mesh = new THREE.Mesh(geo,material); mesh.position.z=z;
+      parent.add(mesh); resources.push(geo,material); return mesh;
+    };
+    const discs = live.current.tracks.map((track,index) => {
+      const group = new THREE.Group();
+      const platter = new THREE.Group(); group.add(platter);
+      const paper = new THREE.MeshStandardMaterial({map:sleeveTexture(track),roughness:.91,metalness:.03,side:THREE.DoubleSide});
+      resources.push(paper.map!);
+      const front = ring(.224,.991,.005,paper,platter);
+      front.userData.index = index;
+      const edgeMaterial = new THREE.MeshStandardMaterial({color:0xc4c5ca,metalness:.72,roughness:.4,side:THREE.DoubleSide});
+      ring(.991,1,.003,edgeMaterial,platter);
+      ring(.98,1,-.006,new THREE.MeshStandardMaterial({color:0x92949c,metalness:.65,roughness:.45,side:THREE.DoubleSide}),platter);
+      const edgeGeo = new THREE.CylinderGeometry(1,1,.009,192,1,true);
+      edgeGeo.rotateX(Math.PI/2);
+      const edge = new THREE.Mesh(edgeGeo,edgeMaterial); platter.add(edge); resources.push(edgeGeo);
+      ring(.126,.224,.006,new THREE.MeshStandardMaterial({color:0xa7acb9,roughness:.42,metalness:.52,side:THREE.DoubleSide}),platter);
+      ring(.14,.194,.009,new THREE.MeshStandardMaterial({color:0xd9dbe0,roughness:.5,metalness:.32,side:THREE.DoubleSide}),platter);
+      ring(.126,.14,.01,new THREE.MeshStandardMaterial({color:0x8c919d,roughness:.44,metalness:.5,side:THREE.DoubleSide}),platter);
+      ring(.195,.199,.011,new THREE.MeshBasicMaterial({color:0xe1e2e5,side:THREE.DoubleSide}),platter);
+      ring(.216,.219,.011,new THREE.MeshBasicMaterial({color:0xbfc3cb,side:THREE.DoubleSide}),platter);
+      const hub=hubTexture();resources.push(hub);
+      ring(.126,.224,.017,new THREE.MeshBasicMaterial({map:hub,side:THREE.DoubleSide}),platter);
+      // A restrained surface reflection; no opaque overlay across the artwork.
+      const sheen = new THREE.ShaderMaterial({
+        transparent:true, depthWrite:false, side:THREE.DoubleSide,
+        uniforms:{uTime:{value:0}},
+        vertexShader:'varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+        fragmentShader:'varying vec2 vUv; uniform float uTime; void main(){vec2 p=vUv-.5;float a=atan(p.y,p.x);float beam=pow(max(0.,cos(a*2.+.6)),22.);float grooves=sin(length(p)*2600.)*.012;vec3 col=mix(vec3(.86,.9,1.),vec3(1.,.93,.8),sin(a)*.5+.5);gl_FragColor=vec4(col,beam*.065+grooves+.012);}'
+      });
+      ring(.224,.99,.014,sheen,platter);
+      scene.add(group);
+      const img = new Image(); img.crossOrigin='anonymous';
+      img.onload=()=>{
+        if (disposed) return;
+        const texture=sleeveTexture(track,img); resources.push(texture);
+        const previous=paper.map;previous?.dispose();if(previous)resources.splice(resources.indexOf(previous),1);
+        paper.map=texture;paper.needsUpdate=true;
+      };
+      img.src=track.artworkUrl;
+      return {group,platter,front,index,spin:0};
+    });
+    let disposed=false;
+    let width=0,height=0,radius=0,spacing=0;
+    const resize = () => {
+      width=element.clientWidth;height=element.clientHeight;
+      renderer.setSize(width,height);
+      camera.left=-width/2;camera.right=width/2;camera.top=height/2;camera.bottom=-height/2;camera.updateProjectionMatrix();
+      radius=width<700 ? Math.min(width*.40,height*.30) : Math.min(width*.205,height*.365);
+      spacing=radius*(width<700 ? 1.7 : 1.82);
+    };
+    const observer=new ResizeObserver(resize);observer.observe(element);resize();
+    const raycaster=new THREE.Raycaster(); const pointer=new THREE.Vector2();
+    let hovered=-1;
+    let drag: {x:number;y:number;target:number;distance:number;pointer:number}|null=null;
+    let wheelTotal=0,lastWheelInput=0,lastWheelStep=0;
+    const pick=(x:number,y:number)=>{
+      const rect=element.getBoundingClientRect();
+      pointer.set((x-rect.left)/width*2-1,-(y-rect.top)/height*2+1);
+      raycaster.setFromCamera(pointer,camera);
+      return raycaster.intersectObjects(discs.map(d=>d.front),false)[0]?.object.userData.index ?? -1;
+    };
+    const down=(e:PointerEvent)=>{
+      if(e.button!==0)return;
+      drag={x:e.clientX,y:e.clientY,target:movement.current.target,distance:0,pointer:e.pointerId};
+      element.setPointerCapture(e.pointerId); setDragging(true);
+    };
+    const move=(e:PointerEvent)=>{
+      if(drag){
+        drag.distance=Math.max(drag.distance,Math.hypot(e.clientX-drag.x,e.clientY-drag.y));
+        movement.current.target=Math.max(-.25,Math.min(discs.length-.75,drag.target-(e.clientX-drag.x)/spacing));
+      }else{
+        hovered=pick(e.clientX,e.clientY);
+        element.style.cursor=hovered>=0?'pointer':'grab';
       }
     };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [browsingIndex, tracks.length, onBrowse]);
-
-  // Compute 3D coverflow styling for each disc
-  const getDiscTransform = useCallback(
-    (index: number) => {
-      const diff = index - browsingIndex;
-      const absDiff = Math.abs(diff);
-
-      if (reducedMotion) {
-        return {
-          transform: `translateX(${diff * 100}%)`,
-          opacity: diff === 0 ? 1 : 0,
-          pointerEvents: (diff === 0 ? 'auto' : 'none') as 'auto' | 'none',
-          zIndex: 10 - absDiff,
-          visibility: (absDiff <= 1 ? 'visible' : 'hidden') as 'visible' | 'hidden'
-        };
+    const up=(e:PointerEvent)=>{
+      if(!drag)return;
+      const clicked=drag.distance<7;
+      if(element.hasPointerCapture(e.pointerId))element.releasePointerCapture(e.pointerId);
+      drag=null;setDragging(false);
+      if(clicked){
+        const index=pick(e.clientX,e.clientY);
+        if(index>=0){live.current.onBrowse(index);live.current.onSelectTrack(live.current.tracks[index],index);}
+      }else{
+        movement.current.target=clampIndex(Math.round(movement.current.target),discs.length);
+        live.current.onBrowse(clampIndex(movement.current.target,discs.length));
       }
-
-      // Max visible range on each side
-      const isVisible = absDiff <= 3;
-      if (!isVisible) {
-        return {
-          display: 'none',
-          zIndex: 0
-        };
+    };
+    const cancel=()=>{drag=null;setDragging(false);movement.current.target=clampIndex(Math.round(movement.current.target),discs.length);live.current.onBrowse(clampIndex(movement.current.target,discs.length));};
+    const wheel=(e:WheelEvent)=>{
+      e.preventDefault();
+      const now=performance.now(); if(now-lastWheelInput>180)wheelTotal=0;lastWheelInput=now;
+      wheelTotal+=(Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY)*(e.deltaMode===1?18:1);
+      if(Math.abs(wheelTotal)>55 && now-lastWheelStep>420){
+        movement.current.target=clampIndex(Math.round(movement.current.target)+Math.sign(wheelTotal),discs.length);
+        live.current.onBrowse(clampIndex(movement.current.target,discs.length));
+        wheelTotal=0;lastWheelStep=now;
       }
+    };
+    element.addEventListener('pointerdown',down);element.addEventListener('pointermove',move);
+    element.addEventListener('pointerup',up);element.addEventListener('pointercancel',cancel);
+    element.addEventListener('wheel',wheel,{passive:false});
+    let frame=0,lastTime=performance.now();
+    const animate=(time:number)=>{
+      const dt=Math.min((time-lastTime)/1000,.04);lastTime=time;
+      const m=movement.current;
+      if(live.current.reducedMotion){m.value=m.target;m.speed=0;}
+      else {const stiffness=drag?65:48; m.speed+=(m.target-m.value)*stiffness*dt;m.speed*=Math.exp(-11*dt);m.value+=m.speed*dt;}
+      const mobile=width<700;
+      discs.forEach(d=>{
+        const diff=d.index-m.value;
+        d.group.visible=Math.abs(diff)<2.9;
+        const step=diff<0?.78:1;
+        d.group.position.set(width*.015+diff*spacing*step, (mobile ? -height*.025 : height*.006)+diff*radius*(diff<0?.37:.62), -Math.abs(diff)*3);
+        // Euler XYZ produces the diagonal, foreshortened face of a physical CD.
+        d.group.rotation.set(.72,.65,-.03+Math.max(-.07,Math.min(.07,m.speed*.008)));
+        d.group.scale.setScalar(radius*Math.max(.5,Math.min(1.3,1+diff*.18)));
+        if(live.current.isPlaying&&live.current.playingIndex===d.index&&!live.current.reducedMotion)d.spin-=dt*.2;
+        d.platter.rotation.z=d.spin;
+      });
+      renderer.render(scene,camera);frame=requestAnimationFrame(animate);
+    };
+    frame=requestAnimationFrame(animate);
+    const onContextLost=(e:Event)=>{e.preventDefault();setFallback(true);};
+    renderer.domElement.addEventListener('webglcontextlost',onContextLost);
+    return ()=>{
+      disposed=true;cancelAnimationFrame(frame);observer.disconnect();
+      element.removeEventListener('pointerdown',down);element.removeEventListener('pointermove',move);
+      element.removeEventListener('pointerup',up);element.removeEventListener('pointercancel',cancel);element.removeEventListener('wheel',wheel);
+      renderer.domElement.removeEventListener('webglcontextlost',onContextLost);
+      resources.forEach(r=>r.dispose());renderer.dispose();renderer.domElement.remove();
+    };
+  }, []);
 
-      const xOffset = diff * spacing;
-      const yOffset = diff * (windowWidth < 600 ? -100 : -discSize * 0.36);
-      const zIndex = 20 - absDiff;
-      const opacity = absDiff <= 2 ? 1 : 0;
-
-      return {
-        transform: `translate3d(${xOffset}px, ${yOffset}px, 0) rotateZ(-32deg) rotateY(-27deg) rotateX(18deg)`,
-        opacity,
-        zIndex,
-        transition: 'transform 0.6s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.6s ease'
-      };
-    },
-    [browsingIndex, spacing, reducedMotion, discSize, windowWidth]
-  );
-
-  return (
-    <div
-      className="disc-gallery-stage"
-      ref={containerRef}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      aria-label="Interactive 3D compact disc carousel"
-    >
-      {/* 3D Viewport with Perspective */}
-      <div className="disc-gallery-viewport">
-        {tracks.map((track, idx) => {
-          const isActive = idx === browsingIndex;
-          const isThisPlaying = idx === playingIndex && isPlaying;
-          const isThisPaused = idx === playingIndex && isPaused;
-          const style = getDiscTransform(idx);
-
-          return (
-            <div
-              key={track.id}
-              className={`disc-gallery-item ${isActive ? 'disc-gallery-item--active' : ''}`}
-              style={style}
-              onClick={() => {
-                if (!isActive) {
-                  onBrowse(idx);
-                } else {
-                  onSelectTrack(track, idx);
-                }
-              }}
-            >
-              <CompactDisc
-                track={track}
-                index={idx}
-                isActive={isActive}
-                isPlaying={isThisPlaying}
-                isPaused={isThisPaused}
-                onSelect={(t, i) => {
-                  if (!isActive) {
-                    onBrowse(i);
-                  } else {
-                    onSelectTrack(t, i);
-                  }
-                }}
-                size={discSize}
-                reducedMotion={reducedMotion}
-              />
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Navigation Arrows */}
-      <button
-        type="button"
-        className="gallery-nav-btn gallery-nav-btn--prev"
-        onClick={() => browsingIndex > 0 && onBrowse(browsingIndex - 1)}
-        disabled={browsingIndex === 0}
-        aria-label="Previous compact disc"
-        title="Previous disc (Left Arrow)"
-      >
-        <ChevronLeft size={24} />
-      </button>
-
-      <button
-        type="button"
-        className="gallery-nav-btn gallery-nav-btn--next"
-        onClick={() => browsingIndex < tracks.length - 1 && onBrowse(browsingIndex + 1)}
-        disabled={browsingIndex === tracks.length - 1}
-        aria-label="Next compact disc"
-        title="Next disc (Right Arrow)"
-      >
-        <ChevronRight size={24} />
-      </button>
-
-      {/* Disc Position Dots for mobile/quick pagination */}
-      <div className="gallery-pagination" role="tablist" aria-label="Disc selection">
-        {tracks.map((t, idx) => (
-          <button
-            key={t.id}
-            type="button"
-            role="tab"
-            aria-selected={idx === browsingIndex}
-            aria-label={`Select track ${idx + 1}: ${t.title}`}
-            className={`gallery-dot ${idx === browsingIndex ? 'gallery-dot--active' : ''} ${idx === playingIndex ? 'gallery-dot--playing' : ''}`}
-            onClick={() => onBrowse(idx)}
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
+  return <div className={`disc-gallery-stage ${dragging?'is-dragging':''}`} ref={host} aria-label="Interactive compact disc collection">
+    {fallback&&<button className="fallback-disc" onClick={()=>props.onSelectTrack(props.tracks[props.browsingIndex],props.browsingIndex)} style={{backgroundImage:`url(${props.tracks[props.browsingIndex].artworkUrl})`}} aria-label={`Play ${props.tracks[props.browsingIndex].title}`}><span/></button>}
+    <div className="sr-only" aria-live="polite">{props.tracks[props.browsingIndex].title}, {props.browsingIndex+1} of {props.tracks.length}</div>
+  </div>;
+}

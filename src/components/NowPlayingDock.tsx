@@ -21,7 +21,7 @@ export const NowPlayingDock: React.FC = () => {
 
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
-  useEffect(() => { if (playingTrack) setIsExpanded(true); }, [playingTrack]);
+  useEffect(() => { if (playingTrack || isPlaying) setIsExpanded(true); }, [playingTrack, isPlaying]);
 
   const formatTime = (seconds: number) => {
     if (!seconds || isNaN(seconds)) return '0:00';
@@ -39,12 +39,13 @@ export const NowPlayingDock: React.FC = () => {
     <aside
       className={`now-playing-dock ${!isExpanded ? 'now-playing-dock--collapsed' : ''} ${!playingTrack ? 'now-playing-dock--idle' : ''}`}
       aria-label="Now playing audio player"
+      hidden={!playingTrack}
     >
       {/* Header Bar */}
       <div className="dock-header">
         <div className="dock-header-left">
           <Music2 size={14} className="dock-music-icon" />
-          <span className="dock-header-title">NOW STREAMING</span>
+          <span className="dock-header-title">NOW PLAYING</span>
           {playbackState === 'playing' && <span className="dock-live-dot" />}
         </div>
         <button
