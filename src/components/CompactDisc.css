@@ -1,0 +1,392 @@
+/* Compact Disc Skeuomorphic Presentation */
+
+.cd-wrapper {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+  transform-origin: center center;
+}
+
+.cd-wrapper:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline-offset: 8px;
+}
+
+.cd-wrapper:hover {
+  transform: scale(1.02);
+}
+
+.cd-wrapper:active {
+  transform: scale(0.99);
+}
+
+/* Ambient Deep Drop Shadow */
+.cd-ambient-shadow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow:
+    0 25px 60px -12px rgba(0, 0, 0, 0.85),
+    0 12px 28px -8px rgba(0, 0, 0, 0.7),
+    0 0 1px 1px rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+  transition: box-shadow 0.4s ease;
+}
+
+.cd-wrapper:hover .cd-ambient-shadow {
+  box-shadow:
+    0 35px 75px -12px rgba(0, 0, 0, 0.92),
+    0 18px 36px -8px rgba(0, 0, 0, 0.8),
+    0 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+
+/* The Main Spinning Platter */
+.cd-platter {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #111215;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    inset 0 0 15px rgba(0, 0, 0, 0.85);
+  transform-origin: center center;
+  will-change: transform;
+}
+
+.cd-platter--spinning {
+  animation: cd-spin 26s linear infinite;
+}
+
+.cd-platter--paused {
+  animation-play-state: paused;
+}
+
+@keyframes cd-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Outer Polycarbonate Clear Edge */
+.cd-outer-rim {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow:
+    inset 0 0 3px rgba(255, 255, 255, 0.2),
+    inset 0 0 12px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  z-index: 6;
+}
+
+/* Artwork Layer */
+.cd-artwork-container {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.cd-artwork-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  filter: saturate(1.05) contrast(1.05);
+}
+
+/* Fallback Artwork when image is loading or fails */
+.cd-fallback-artwork {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 35% 35%, #2a2c33 0%, #16171b 60%, #0d0e11 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.cd-fallback-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 16px 16px;
+  opacity: 0.6;
+}
+
+.cd-fallback-text {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 24px;
+  transform: translateY(-20px);
+}
+
+.cd-fallback-brand {
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.cd-fallback-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+}
+
+.cd-fallback-artist {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Concentric Audio Tracks / Grooves */
+.cd-grooves-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-radial-gradient(
+    circle at center,
+    transparent 0px,
+    transparent 2px,
+    rgba(255, 255, 255, 0.02) 2.5px,
+    transparent 3px
+  );
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 2;
+  mix-blend-mode: overlay;
+}
+
+/* Anisotropic Specular Glare & Iridescent CD Rainbow Prism */
+.cd-sheen-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 45deg at 50% 50%,
+    transparent 0deg,
+    rgba(255, 255, 255, 0.08) 35deg,
+    rgba(167, 139, 250, 0.12) 55deg,
+    rgba(96, 165, 250, 0.14) 75deg,
+    rgba(52, 211, 153, 0.1) 95deg,
+    transparent 125deg,
+    transparent 180deg,
+    rgba(255, 255, 255, 0.08) 215deg,
+    rgba(251, 191, 36, 0.12) 235deg,
+    rgba(244, 114, 182, 0.14) 255deg,
+    rgba(192, 132, 252, 0.1) 275deg,
+    transparent 305deg,
+    transparent 360deg
+  );
+  pointer-events: none;
+  z-index: 3;
+  mix-blend-mode: screen;
+  opacity: 0.7;
+}
+
+.cd-sheen-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    transparent 38%,
+    transparent 62%,
+    rgba(255, 255, 255, 0.12) 100%
+  );
+  pointer-events: none;
+  z-index: 3;
+  mix-blend-mode: overlay;
+}
+
+/* Outer Mirror Ring Band */
+.cd-mirror-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at center,
+    transparent 0%,
+    transparent 42%,
+    rgba(255, 255, 255, 0.06) 43%,
+    transparent 44%
+  );
+  pointer-events: none;
+  z-index: 4;
+}
+
+/* Metallic Center Clamping Band with Laser Stamper Matrix Code */
+.cd-metallic-band {
+  position: absolute;
+  width: 44%;
+  height: 44%;
+  top: 28%;
+  left: 28%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 45% 45%,
+    #d8dce2 0%,
+    #b8bec8 25%,
+    #9aa0ac 50%,
+    #e2e6ed 75%,
+    #888e99 100%
+  );
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.4),
+    inset 0 0 8px rgba(0, 0, 0, 0.4),
+    inset 0 0 1px 1px rgba(255, 255, 255, 0.5);
+  pointer-events: none;
+  z-index: 4;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cd-laser-text-svg {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.cd-stamper-text {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 6.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  fill: rgba(30, 35, 45, 0.65);
+}
+
+/* Clear Plastic Inner Hub */
+.cd-plastic-hub {
+  position: absolute;
+  width: 25%;
+  height: 25%;
+  top: 37.5%;
+  left: 37.5%;
+  border-radius: 50%;
+  background: rgba(220, 225, 235, 0.28);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow:
+    inset 0 0 4px rgba(255, 255, 255, 0.5),
+    inset 0 0 6px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cd-hub-ridge {
+  width: 78%;
+  height: 78%;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: inset 0 0 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Center Spindle Transparent Hole (Standard 15mm clear cutout) */
+.cd-center-hole {
+  position: absolute;
+  width: 12%;
+  height: 12%;
+  top: 44%;
+  left: 44%;
+  border-radius: 50%;
+  background: #080808; /* Blends seamlessly into backdrop */
+  box-shadow:
+    inset 0 0 4px 2px rgba(0, 0, 0, 0.9),
+    0 0 0 1px rgba(255, 255, 255, 0.3),
+    0 0 2px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+  z-index: 7;
+}
+
+.cd-hole-rim {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* Floating Center Control Badge */
+.cd-control-badge {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(15, 17, 23, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  pointer-events: none;
+  color: #ffffff;
+  transition: transform 0.2s ease, background 0.2s ease;
+  animation: badge-pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes badge-pop {
+  from {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.cd-control-badge--playing {
+  background: rgba(255, 255, 255, 0.95);
+  color: #0f1117;
+  border-color: rgba(255, 255, 255, 0.8);
+}
+
+.cd-badge-icon--play {
+  margin-left: 2px;
+}
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  .cd-platter--spinning {
+    animation: none !important;
+  }
+  .cd-wrapper {
+    transition: none !important;
+  }
+  .cd-control-badge {
+    animation: none !important;
+  }
+}

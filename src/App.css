@@ -1,0 +1,178 @@
+/* Main Application Experience Layout & Aesthetics */
+
+.katosi-experience-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background-color: #07080a;
+  overflow-x: hidden;
+  color: #ffffff;
+  padding: 0;
+  isolation: isolate;
+}
+
+/* Dynamic Ambient Glow */
+.ambient-glow {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(
+    circle at 65% 45%,
+    var(--track-ambient-color, #3d5a80) 0%,
+    transparent 65%
+  );
+  opacity: 0.16;
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 1;
+  transition: background 1.2s ease, opacity 1s ease;
+}
+
+.ambient-radial-spot {
+  position: fixed;
+  top: 50%;
+  left: 65%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.04) 0%,
+    transparent 70%
+  );
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Subtle Film Grain Texture Overlay */
+.film-grain-layer {
+  position: fixed;
+  inset: 0;
+  opacity: 0.035;
+  pointer-events: none;
+  z-index: 2;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+/* Main Two-Column Layout */
+.katosi-main-container {
+  position: relative;
+  z-index: 10;
+  flex: 1;
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 90px 48px 40px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+  min-height: calc(100svh - 130px);
+}
+
+/* Left Column: Metadata & Details */
+.katosi-info-column {
+  flex: 0 0 380px;
+  max-width: 440px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 15;
+}
+
+/* Right / Center Column: 3D Disc Gallery */
+.katosi-disc-column {
+  flex: 1;
+  height: 100%;
+  min-height: 480px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 10;
+}
+
+/* Footer & Hints */
+.katosi-footer {
+  position: relative;
+  z-index: 20;
+  padding: 16px 48px 24px 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.footer-hints {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-hint-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.footer-hint-separator {
+  opacity: 0.4;
+}
+
+.footer-branding {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  opacity: 0.6;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1024px) {
+  .katosi-main-container {
+    padding: 80px 24px 30px 24px;
+    gap: 24px;
+  }
+  .katosi-info-column {
+    flex: 0 0 320px;
+  }
+}
+
+@media (max-width: 860px) {
+  .katosi-main-container {
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 70px 16px 120px 16px;
+    gap: 30px;
+    min-height: auto;
+  }
+
+  .katosi-disc-column {
+    width: 100%;
+    min-height: 340px;
+    order: 1;
+  }
+
+  .katosi-info-column {
+    width: 100%;
+    max-width: 100%;
+    flex: none;
+    order: 2;
+  }
+
+  .katosi-footer {
+    padding: 16px 16px 80px 16px;
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .footer-hints {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+}
