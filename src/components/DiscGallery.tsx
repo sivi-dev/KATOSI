@@ -39,8 +39,8 @@ export const DiscGallery: React.FC<DiscGalleryProps> = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const discSize = windowWidth < 480 ? 250 : windowWidth < 768 ? 300 : windowWidth < 1200 ? 360 : 410;
-  const spacing = windowWidth < 480 ? 110 : windowWidth < 768 ? 160 : 230;
+  const discSize = windowWidth < 600 ? 310 : Math.min(windowWidth * 0.43, 620);
+  const spacing = windowWidth < 600 ? 300 : discSize * 0.98;
 
   // Touch gesture handling
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -131,20 +131,18 @@ export const DiscGallery: React.FC<DiscGalleryProps> = ({
       }
 
       const xOffset = diff * spacing;
-      const zOffset = -absDiff * 140;
-      const yRotation = diff === 0 ? 0 : diff > 0 ? -32 : 32;
-      const scale = Math.max(0.68, 1 - absDiff * 0.12);
-      const opacity = Math.max(0.2, 1 - absDiff * 0.25);
+      const yOffset = diff * (windowWidth < 600 ? -100 : -discSize * 0.36);
       const zIndex = 20 - absDiff;
+      const opacity = absDiff <= 2 ? 1 : 0;
 
       return {
-        transform: `translate3d(${xOffset}px, 0, ${zOffset}px) rotateY(${yRotation}deg) scale(${scale})`,
+        transform: `translate3d(${xOffset}px, ${yOffset}px, 0) rotateZ(-32deg) rotateY(-27deg) rotateX(18deg)`,
         opacity,
         zIndex,
         transition: 'transform 0.6s cubic-bezier(0.2, 0.9, 0.3, 1), opacity 0.6s ease'
       };
     },
-    [browsingIndex, spacing, reducedMotion]
+    [browsingIndex, spacing, reducedMotion, discSize, windowWidth]
   );
 
   return (

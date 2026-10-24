@@ -63,7 +63,7 @@ export const CompactDisc: React.FC<CompactDiscProps> = ({
 
       {/* Main Rotating Disc Platter */}
       <div
-        className={`cd-platter ${isPlaying && !reducedMotion ? 'cd-platter--spinning' : ''} ${isPaused ? 'cd-platter--paused' : ''}`}
+        className={`cd-platter ${!reducedMotion ? 'cd-platter--spinning' : ''} ${!isPlaying ? 'cd-platter--paused' : ''}`}
       >
         {/* Polycarbonate Outer Rim */}
         <div className="cd-outer-rim" />

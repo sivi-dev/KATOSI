@@ -7,6 +7,7 @@ import { TrackIndex } from './components/TrackIndex';
 import { NowPlayingDock } from './components/NowPlayingDock';
 import { Compass, Keyboard } from 'lucide-react';
 import './App.css';
+import './reference-theme.css';
 
 const MainAppContent: React.FC = () => {
   const {
@@ -122,6 +123,11 @@ const MainAppContent: React.FC = () => {
         </div>
       </main>
 
+      <div className="collection-caption" aria-live="polite">
+        <span>THE KATOSI COLLECTION · {String(browsingIndex + 1).padStart(2, '0')} / 10</span>
+        <p>Sound reflects you.</p>
+        <button onClick={() => playTrack(currentBrowsedTrack, browsingIndex)}>{isBrowsedTrackPlaying ? 'Pause the record' : 'Click a disc to listen'} ↗</button>
+      </div>
       {/* Subtle Bottom Navigation Hints */}
       <footer className="katosi-footer">
         <div className="footer-hints">

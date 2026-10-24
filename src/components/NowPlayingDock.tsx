@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAudio } from '../context/AudioContext';
 import { Play, Pause, SkipBack, SkipForward, ExternalLink, AlertCircle, ChevronDown, ChevronUp, Music2 } from 'lucide-react';
 import './NowPlayingDock.css';
@@ -21,6 +21,8 @@ export const NowPlayingDock: React.FC = () => {
 
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
 
+  useEffect(() => { if (playingTrack) setIsExpanded(true); }, [playingTrack]);
+
   const formatTime = (seconds: number) => {
     if (!seconds || isNaN(seconds)) return '0:00';
     const mins = Math.floor(seconds / 60);
@@ -35,7 +37,7 @@ export const NowPlayingDock: React.FC = () => {
 
   return (
     <aside
-      className={`now-playing-dock ${!isExpanded ? 'now-playing-dock--collapsed' : ''}`}
+      className={`now-playing-dock ${!isExpanded ? 'now-playing-dock--collapsed' : ''} ${!playingTrack ? 'now-playing-dock--idle' : ''}`}
       aria-label="Now playing audio player"
     >
       {/* Header Bar */}
@@ -48,7 +50,7 @@ export const NowPlayingDock: React.FC = () => {
         <button
           type="button"
           className="dock-toggle-btn"
-          onClick={() => setIsExpanded(!isExpanded)}
+          onClick={() => { if (isExpanded && isPlaying) togglePlayPause(); setIsExpanded(!isExpanded); }}
           aria-label={isExpanded ? 'Collapse player dock' : 'Expand player dock'}
         >
           {isExpanded ? <ChevronDown size={16} /> : <ChevronUp size={16} />}

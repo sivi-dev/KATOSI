@@ -1,6 +1,6 @@
 import React from 'react';
 import type { Track } from '../data/tracks';
-import { Play, Pause, ExternalLink, Disc3, Sparkles } from 'lucide-react';
+import { Play, Pause, ExternalLink, Disc3 } from 'lucide-react';
 import './SongDetails.css';
 
 interface SongDetailsProps {
@@ -67,19 +67,6 @@ export const SongDetails: React.FC<SongDetailsProps> = ({
       {/* Main Track Title */}
       <h1 className="song-title">{track.title}</h1>
 
-      {/* Primary Artist */}
-      <p className="song-primary-artist">{track.artists.join(', ')}</p>
-
-      {/* Editorial Quote / Lyrical Excerpt */}
-      {track.featuredQuote && (
-        <div className="song-quote-card">
-          <Sparkles size={14} className="song-quote-icon" />
-          <blockquote className="song-quote-text">
-            “{track.featuredQuote}”
-          </blockquote>
-        </div>
-      )}
-
       {/* Metadata Specification Panels with Fine Dividers */}
       <div className="song-meta-panels">
         <div className="song-meta-row">
@@ -93,8 +80,8 @@ export const SongDetails: React.FC<SongDetailsProps> = ({
         </div>
 
         <div className="song-meta-row">
-          <span className="meta-label">LYRICS</span>
-          <span className="meta-value">{track.lyricist}</span>
+          <span className="meta-label">PERFORMED BY</span>
+          <span className="meta-value">{track.artists.join(', ')}</span>
         </div>
 
         <div className="song-meta-row">
