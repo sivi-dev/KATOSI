@@ -15,6 +15,8 @@ export function TrackIndex({isOpen,onClose,tracks,browsingIndex,playingIndex,isP
   return <dialog ref={dialog} className="track-index-panel" aria-labelledby="track-index-title" onCancel={onClose} onClose={onClose} onClick={e=>{
     if(e.target===dialog.current){const r=dialog.current.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)onClose();}
   }}>
+    <span className="glass-glint-tl" aria-hidden="true" />
+    <span className="glass-glint-br" aria-hidden="true" />
     <header className="index-heading"><div><span>THE KATOSI COLLECTION</span><h2 id="track-index-title">The index.</h2></div><button onClick={onClose} aria-label="Close track index" autoFocus>×</button></header>
     <ol className="index-records">
       {tracks.map((track,index)=><li key={track.id} className={index===browsingIndex?'index-record-selected':''}>

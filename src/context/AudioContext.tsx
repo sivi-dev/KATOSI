@@ -52,6 +52,9 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const playerRef = useRef<any>(null);
   const requestedTrackRef = useRef<{ track: Track; index: number } | null>(null);
   const timeIntervalRef = useRef<number | null>(null);
+  const triedFallbackRef = useRef<boolean>(false);
+  const playingIndexRef = useRef<number>(playingIndex);
+  useEffect(() => { playingIndexRef.current = playingIndex; }, [playingIndex]);
 
   const playingTrack = playingIndex >= 0 && playingIndex < TRACKS.length ? TRACKS[playingIndex] : null;
   const isPlaying = playbackState === 'playing';
@@ -137,6 +140,12 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             onError: (event: any) => {
               if (isCancelled) return;
               const errorCode = event.data;
+              const curTrack = playingIndexRef.current >= 0 && playingIndexRef.current < TRACKS.length ? TRACKS[playingIndexRef.current] : null;
+              if ((errorCode === 101 || errorCode === 150) && curTrack?.fallbackVideoId && !triedFallbackRef.current) {
+                triedFallbackRef.current = true;
+                playerRef.current?.loadVideoById?.(curTrack.fallbackVideoId);
+                return;
+              }
               let msg = 'Playback error occurred.';
               if (errorCode === 101 || errorCode === 150) {
                 msg = 'Embedding restricted by owner. You can play directly on YouTube.';
@@ -163,6 +172,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         const tag = document.createElement('script');
         tag.id = 'katosi-yt-api-script';
         tag.src = 'https://www.youtube.com/iframe_api';
+        tag.onerror = () => { if (!isCancelled) { setErrorMessage('The online player could not load. Try opening this record on YouTube.');setPlaybackState('error');} };
         const firstScriptTag = document.getElementsByTagName('script')[0];
         firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
       }
@@ -224,6 +234,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     // Switching to a new track
+    triedFallbackRef.current = false;
     setCurrentTime(0);
     setDuration(0);
     setAutoplayBlocked(false);

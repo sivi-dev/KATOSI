@@ -1,4 +1,4 @@
-.track-index-panel {position:fixed;inset:50px auto auto 50%;translate:-15% 0;width:390px;max-width:calc(100vw - 28px);max-height:calc(100svh - 80px);padding:0;margin:0;border:1px solid #a7a79f;background:#f2f2ef;color:#191918;box-shadow:0 15px 60px #0002;overflow:auto;}
+.track-index-panel {position:fixed;inset:50px auto auto 50%;translate:-15% 0;width:390px;max-width:calc(100vw - 28px);max-height:calc(100svh - 80px);padding:0;margin:0;border:1px solid var(--color-silver);background:var(--color-pearl);color:var(--color-aubergine);box-shadow:0 15px 60px #0002;overflow:auto;}
 .track-index-panel::backdrop {background:#eeeee980;backdrop-filter:blur(5px);}
 .track-index-panel[open] {animation:index-appear .25s ease;}
 .index-heading {display:flex;align-items:flex-start;justify-content:space-between;padding:20px 20px 15px;}
@@ -6,15 +6,24 @@
 .index-heading h2 {font:36px/1 'Archive Serif',Georgia,serif;letter-spacing:-1.2px;margin:8px 0 0;}
 .index-heading>button {background:none;border:0;font:25px/1 Georgia,serif;padding:0 0 8px 12px;}
 .index-records {list-style:none;padding:0 18px;margin:0;}
-.index-records li {display:flex;align-items:center;border-top:1px solid #c6c6be;gap:5px;}
-.index-record-selected {background:#e5e5de;}
+.index-records li {display:flex;align-items:center;border-top:1px solid var(--color-rule);gap:5px;}
+.index-record-selected {background:var(--color-aubergine);}
 .index-browse {display:flex;align-items:center;gap:12px;background:none;border:0;text-align:left;min-width:0;flex:1;padding:10px 3px;}
-.index-number {font:8px Georgia,serif;color:#77776e;width:15px;flex-shrink:0;}
+.index-number {font:8px Georgia,serif;color:var(--color-secondary);width:15px;flex-shrink:0;}
 .index-browse img {width:32px;height:32px;border-radius:50%;object-fit:cover;mask-image:radial-gradient(circle,transparent 0 8%,black 9%);}
 .index-track-title {font-size:12px;line-height:1.25;}
-.index-track-title small {display:block;font-size:8px;color:#74746c;margin-top:4px;line-height:1.3;}
+.index-track-title small {display:block;font-size:8px;color:var(--color-secondary);margin-top:4px;line-height:1.3;}
 .index-play {border:0;background:none;font-size:16px;padding:12px;}
 .index-browse:hover,.index-play:hover {opacity:.6;}
-.index-footer {font:11px Georgia,serif;font-style:italic;text-align:center;padding:18px;color:#77776e;}
+.index-footer {font:11px Georgia,serif;font-style:italic;text-align:center;padding:18px;color:var(--color-secondary);}
 @keyframes index-appear {from{opacity:0;transform:translateY(-5px);}to{opacity:1;transform:translateY(0);}}
 @media(max-width:700px){.track-index-panel {left:50%;translate:-50% 0;top:55px;}}
+.track-index-panel {box-shadow:0 15px 60px #301b3524;}
+.track-index-panel::backdrop {background:#301b3529;}
+.index-heading {background:var(--color-aubergine);color:var(--color-pearl);border-bottom:2px solid var(--color-marigold);}
+.index-heading>div>span {color:var(--color-silver);}
+.index-heading>button:hover {color:var(--color-marigold);}
+.index-record-selected {color:var(--color-pearl);}
+.index-record-selected .index-number,.index-record-selected .index-play {color:var(--color-marigold);}
+.index-record-selected .index-track-title small {color:var(--color-silver);}
+.index-play:hover {opacity:1;color:var(--color-aubergine);background:var(--color-marigold);}

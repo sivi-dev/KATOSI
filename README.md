@@ -8,7 +8,7 @@ KATOSI reimagines digital music curation through convincing skeuomorphic compact
 
 ## Features
 
-- **3D Coverflow Disc Gallery**: Browse all 10 cinema tracks with smooth CSS 3D perspective transforms, depth layering, and responsive scaling.
+- **3D Disc Gallery**: Browse all 10 cinema tracks in a Three.js scene with physical center cutouts, layered metallic hubs, printed album artwork, spring-based dragging, wheel browsing, and keyboard controls. The renderer skips redraws while idle and respects reduced-motion preferences.
 - **Skeuomorphic Compact Discs**:
   - Transparent center spindle hole revealing backdrop lighting.
   - Specular metallic inner ring and clear polycarbonate clamping hub.
@@ -83,7 +83,7 @@ Each track record contains:
 
 To update or replace a song:
 1. Update `youtubeVideoId` with the 11-character YouTube video ID.
-2. Update `artworkUrl` with an image URL or official YouTube thumbnail (`https://i.ytimg.com/vi/{VIDEO_ID}/maxresdefault.jpg`).
+2. Update `artworkUrl` with a high-resolution square album image whose host permits cross-origin image loading, and keep its source in `artworkSourceUrl`. The current collection uses artwork from matched Apple Music releases.
 3. Set `availability: 'available'` (or `'restricted'` / `'unavailable'` if embedding is disallowed).
 
 ---
@@ -118,3 +118,29 @@ npm run preview
 node test-katosi.js
 ```
 Runs the automated test suite verifying all 10 tracks, metadata ordering, and querying YouTube's official oEmbed API live.
+
+### Visual design
+
+The full-screen gallery uses a pale textured background, compact credits, and diagonal disc framing inspired by the supplied A24 reference. Mobile navigation sits at the bottom. The YouTube API loads only after a record is selected; its visible player stays separate from browsing. The index uses a native modal dialog for focus handling.
+
+Display and interface fonts are self-hosted in `public/fonts`; their OFL licenses are included. The 3D scene is loaded as a separate module to keep the initial application bundle small.
+
+### Song pages and CD interactions
+
+A single CD click shrinks the selected disc to 64% and starts playback after the short double-click detection window. Double-clicking (or double-tapping) opens `/songs/<track-id>` with the song's credits, artwork, and playback controls. The visible “View song details” link provides keyboard and touch access as well. Browser Back/Forward and direct page reloads work; production hosting must serve `index.html` for `/songs/*` routes. Playback remains in the shared player while navigating within the site.
+
+### Playing record ornament
+
+Six original musical-note symbols orbit the playing CD in both the Three.js gallery and the song detail page. The effect follows real playback state, stops and disappears on pause, and stays static with reduced motion enabled. Shared vector note shapes are defined in `src/components/musicalNotation.ts`.
+
+### Colour theme
+
+KATOSI uses CD Silver (`#C5C8D0`), Deep Aubergine (`#301B35`), Marigold (`#E8A526`), Soft Pearl (`#F3F1EE`), and Muted Plum (`#847487`). CSS palette tokens live in `src/index.css`; canvas and SVG colours live in `src/theme.ts`. Aubergine provides the interface ink and panel headers, silver the disc details and dividers, and marigold playback and navigation accents.
+
+### Glass surfaces
+
+`src/glass-theme.css` adds frosted silver panels, translucent aubergine navigation, marigold highlights, and an aubergine backdrop with silver and warm ambient light. Navigation, collection credits, the track index, the player, and song details use backdrop blur with opaque fallbacks for unsupported browsers. Album artwork remains unmodified; musical notes use silver and marigold to stay visible against the darker gallery.
+
+### Editorial landing reference
+
+`src/editorial-theme.css` applies the latest supplied reference: a warm paper background, fine vertical grid, staggered oversized “Sound is a new feeling” headline, blurred marigold accents, and restrained glass controls. The headline sits behind the Three.js CDs, which retain their original artwork colours. Explore opens the collection index; Song notes and double-clicking a CD open the existing song pages.

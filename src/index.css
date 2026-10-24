@@ -1,13 +1,88 @@
-@font-face { font-family: 'Archive Serif'; src: url('/fonts/editorial.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
-@font-face { font-family: 'Archive Sans'; src: url('/fonts/sans.woff2') format('woff2'); font-weight: 400 500; font-style: normal; font-display: swap; }
-:root { font-family: 'Archive Sans', Arial, sans-serif; color: #171716; background: #f0f0ee; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
-* { box-sizing: border-box; }
-html,body,#root { margin:0; width:100%; min-height:100%; }
-body { overflow:hidden; }
-button,a,input { -webkit-tap-highlight-color:transparent; }
-button { font:inherit; cursor:pointer; }
-a { color:inherit; }
-button:focus-visible,a:focus-visible,input:focus-visible { outline:1px solid #333; outline-offset:6px; }
-button { color:inherit; }
-.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
-@media(prefers-reduced-motion:reduce){ *,*::before,*::after { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
+/* ==========================================================================
+   KATOSI — Global Styles & Typography Tokens
+   ========================================================================== */
+
+:root {
+  --color-silver: #c5c8d0;
+  --color-dark: #08090d;
+  --color-aubergine: #191b24;
+  --color-marigold: #e8a526;
+  --color-pearl: #ffffff;
+  --color-plum: #847487;
+  --color-secondary: rgba(255, 255, 255, 0.7);
+  --color-rule: rgba(255, 255, 255, 0.12);
+
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #ffffff;
+  background-color: #08090d;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+  background-color: #08090d;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+button,
+a,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.85);
+  outline-offset: 4px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+::selection {
+  background: rgba(255, 255, 255, 0.9);
+  color: #08090d;
+}

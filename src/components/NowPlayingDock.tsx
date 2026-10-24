@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAudio } from '../context/AudioContext';
-import { Play, Pause, SkipBack, SkipForward, ExternalLink, AlertCircle, ChevronDown, ChevronUp, Music2 } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, ExternalLink, AlertCircle, ChevronDown, ChevronUp, Music2, Tv } from 'lucide-react';
 import './NowPlayingDock.css';
 
 export const NowPlayingDock: React.FC = () => {
@@ -20,8 +20,10 @@ export const NowPlayingDock: React.FC = () => {
   } = useAudio();
 
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
+  const [showVideo, setShowVideo] = useState<boolean>(true);
 
-  useEffect(() => { if (playingTrack || isPlaying) setIsExpanded(true); }, [playingTrack, isPlaying]);
+  useEffect(() => { if (playingTrack) setIsExpanded(true); }, [playingTrack]);
+  useEffect(() => { if (isPlaying) setIsExpanded(true); }, [isPlaying]);
 
   const formatTime = (seconds: number) => {
     if (!seconds || isNaN(seconds)) return '0:00';
@@ -37,31 +39,61 @@ export const NowPlayingDock: React.FC = () => {
 
   return (
     <aside
-      className={`now-playing-dock ${!isExpanded ? 'now-playing-dock--collapsed' : ''} ${!playingTrack ? 'now-playing-dock--idle' : ''}`}
-      aria-label="Now playing audio player"
+      className={`now-playing-dock liquid-glass-slab ${!isExpanded ? 'now-playing-dock--collapsed' : ''} ${!playingTrack ? 'now-playing-dock--idle' : ''}`}
+      aria-label="Now playing audio and video player"
       hidden={!playingTrack}
+      style={{ ['--dock-accent' as any]: playingTrack?.accentColor || '#e8a526' }}
     >
+      {/* Signature Specular Corner Lens Flare Glints */}
+      <span className="glass-glint-tl" aria-hidden="true" />
+      <span className="glass-glint-br" aria-hidden="true" />
+
       {/* Header Bar */}
       <div className="dock-header">
         <div className="dock-header-left">
           <Music2 size={14} className="dock-music-icon" />
           <span className="dock-header-title">NOW PLAYING</span>
-          {playbackState === 'playing' && <span className="dock-live-dot" />}
+          {playbackState === 'playing' ? (
+            <span className="dock-live-eq" aria-label="Audio active">
+              <span className="dock-eq-bar dock-eq-bar--1" />
+              <span className="dock-eq-bar dock-eq-bar--2" />
+              <span className="dock-eq-bar dock-eq-bar--3" />
+            </span>
+          ) : (
+            <span className="dock-idle-dot" />
+          )}
         </div>
-        <button
-          type="button"
-          className="dock-toggle-btn"
-          onClick={() => { if (isExpanded && isPlaying) togglePlayPause(); setIsExpanded(!isExpanded); }}
-          aria-label={isExpanded ? 'Collapse player dock' : 'Expand player dock'}
-        >
-          {isExpanded ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-        </button>
+        <div className="dock-header-actions">
+          {/* Toggle Video Preview Button */}
+          <button
+            type="button"
+            className={`dock-tool-btn ${showVideo ? 'dock-tool-btn--active' : ''}`}
+            onClick={() => setShowVideo(!showVideo)}
+            aria-label={showVideo ? 'Hide video canvas' : 'Show video canvas'}
+            title={showVideo ? 'Hide video frame' : 'Show video frame'}
+          >
+            <Tv size={14} />
+          </button>
+          {/* Collapse/Expand Dock Button */}
+          <button
+            type="button"
+            className="dock-tool-btn"
+            onClick={() => { if (isExpanded && isPlaying) togglePlayPause(); setIsExpanded(!isExpanded); }}
+            aria-label={isExpanded ? 'Collapse player dock' : 'Expand player dock'}
+            title={isExpanded ? 'Collapse player' : 'Expand player'}
+          >
+            {isExpanded ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+          </button>
+        </div>
       </div>
 
       {/* Main Content when expanded */}
       <div className="dock-body">
-        {/* Persistent YouTube Iframe Target Container */}
-        <div className="dock-iframe-wrapper">
+        {/* Persistent YouTube Iframe Target Container (Always mounted in DOM for audio continuity) */}
+        <div
+          className={`dock-iframe-wrapper ${!showVideo ? 'dock-iframe-wrapper--minimized' : ''}`}
+          aria-hidden={!showVideo}
+        >
           <div id="katosi-youtube-iframe-target" />
         </div>
 
@@ -69,7 +101,7 @@ export const NowPlayingDock: React.FC = () => {
         {autoplayBlocked && (
           <div className="dock-alert dock-alert--autoplay" role="alert">
             <AlertCircle size={15} />
-            <span>Browser blocked audio autoplay. <strong>Press play</strong> on the player to listen.</span>
+            <span>Browser blocked autoplay. <strong>Click play</strong> below to start playback.</span>
           </div>
         )}
 
@@ -93,15 +125,24 @@ export const NowPlayingDock: React.FC = () => {
           </div>
         )}
 
-        {/* Track Title and Controls */}
+        {/* Track Title, Artwork and Controls */}
         <div className="dock-controls-area">
-          <div className="dock-track-info">
-            <span className="dock-track-title">
-              {playingTrack ? playingTrack.title : 'Select a compact disc to play'}
-            </span>
-            <span className="dock-track-sub">
-              {playingTrack ? `${playingTrack.artists.join(', ')} • ${playingTrack.albumOrFilm}` : 'KATOSI Audio Stream'}
-            </span>
+          <div className="dock-track-row">
+            {playingTrack?.artworkUrl && (
+              <img
+                src={playingTrack.artworkUrl}
+                alt=""
+                className="dock-track-thumb"
+              />
+            )}
+            <div className="dock-track-info">
+              <span className="dock-track-title">
+                {playingTrack ? playingTrack.title : 'Select a compact disc to play'}
+              </span>
+              <span className="dock-track-sub">
+                {playingTrack ? `${playingTrack.artists.join(', ')}` : 'KATOSI Audio Stream'}
+              </span>
+            </div>
           </div>
 
           {/* Timeline slider */}
@@ -136,7 +177,7 @@ export const NowPlayingDock: React.FC = () => {
 
             <button
               type="button"
-              className="dock-ctrl-btn dock-ctrl-btn--play"
+              className={`dock-ctrl-btn dock-ctrl-btn--play ${isPlaying ? 'dock-ctrl-btn--playing' : ''}`}
               onClick={togglePlayPause}
               disabled={!isPlayerReady}
               aria-label={isPlaying ? 'Pause song' : 'Play song'}

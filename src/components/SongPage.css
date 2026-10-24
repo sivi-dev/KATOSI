@@ -1,0 +1,332 @@
+/* ==========================================================================
+   KATOSI — Song Details Page (Cinematic Glass View)
+   ========================================================================== */
+
+.song-page {
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow-y: auto;
+  padding: 32px 4vw 48px;
+  background: 
+    radial-gradient(circle at 65% 30%, rgba(95, 105, 145, 0.22) 0%, transparent 60%),
+    radial-gradient(circle at 20% 80%, rgba(220, 145, 60, 0.12) 0%, transparent 50%),
+    linear-gradient(145deg, #090a0f 0%, #11131a 45%, #0d0e14 100%);
+  color: #ffffff;
+  position: relative;
+  font-family: var(--font-main, 'Plus Jakarta Sans', sans-serif);
+}
+
+.song-page-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.04) 100%);
+  backdrop-filter: blur(24px) saturate(160%);
+  -webkit-backdrop-filter: blur(24px) saturate(160%);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border-top: 2px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.5);
+  font-size: 14px;
+  font-weight: 600;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.song-page-nav a {
+  color: #ffffff;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.song-page-nav a:hover {
+  opacity: 0.75;
+}
+
+.song-page-nav > span:nth-child(2) {
+  font-family: var(--font-display, 'Syne', sans-serif);
+  font-size: 18px;
+  letter-spacing: 0.16em;
+  font-weight: 800;
+}
+
+.song-page-nav > span:last-child {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.song-page-content {
+  max-width: 1200px;
+  margin: 60px auto 50px auto;
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 70px;
+  align-items: center;
+}
+
+.song-page-artwork {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.detail-record-stage {
+  position: relative;
+  width: min(100%, 420px);
+  aspect-ratio: 1;
+}
+
+.detail-disc {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  padding: 0;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  overflow: hidden;
+  background: #121318;
+  mask-image: radial-gradient(circle, transparent 0 8.5%, black 8.8%);
+  -webkit-mask-image: radial-gradient(circle, transparent 0 8.5%, black 8.8%);
+  box-shadow: 
+    0 30px 70px -10px rgba(0, 0, 0, 0.85),
+    0 12px 30px -5px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  animation: detail-spin 28s linear infinite;
+  animation-play-state: paused;
+  transition: transform 0.3s ease;
+}
+
+.detail-disc:hover {
+  transform: scale(1.03);
+}
+
+.detail-disc--playing {
+  animation-play-state: running;
+}
+
+.detail-disc img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.detail-disc-hub {
+  position: absolute;
+  inset: 38%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.9) 0 35%,
+    #a7adba 36% 45%,
+    #dee0e5 46% 60%,
+    #b0b6c2 61% 78%,
+    #d4d8e0 79% 85%,
+    #9da4b2 86%
+  );
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+}
+
+.song-page-artwork > p {
+  margin: 24px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: rgba(255, 255, 255, 0.65);
+  text-transform: uppercase;
+}
+
+/* Song Page Info Panel */
+.song-page-info {
+  position: relative;
+  padding: 42px 44px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.04) 40%,
+    rgba(255, 255, 255, 0.02) 65%,
+    rgba(255, 255, 255, 0.10) 100%
+  );
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border-radius: 28px;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-top: 2px solid rgba(255, 255, 255, 0.8);
+  border-left: 2px solid rgba(255, 255, 255, 0.65);
+  box-shadow: 
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    inset 0 2px 5px rgba(255, 255, 255, 0.6),
+    inset 0 -2px 5px rgba(0, 0, 0, 0.35),
+    0 25px 60px -10px rgba(0, 0, 0, 0.7),
+    0 12px 28px -5px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+}
+
+.song-page-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  display: block;
+}
+
+.song-page-eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 2px;
+  vertical-align: middle;
+  margin-right: 10px;
+  background: #ffffff;
+}
+
+.song-page-info h1 {
+  font-family: var(--font-main, 'Plus Jakarta Sans', sans-serif);
+  font-size: clamp(38px, 4.5vw, 62px);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  margin: 0 0 12px 0;
+  text-shadow: 0 2px 20px rgba(0, 0, 0, 0.5);
+}
+
+.song-page-artists {
+  font-size: 20px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 6px 0;
+}
+
+.song-page-album {
+  font-size: 16px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0 0 28px 0;
+}
+
+.song-page-credits {
+  margin: 0 0 32px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.song-page-credits > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.song-page-credits dt {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+}
+
+.song-page-credits dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: right;
+}
+
+.song-page-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.song-page-actions button {
+  padding: 14px 30px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #090a0f;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.35);
+}
+
+.song-page-actions button:hover {
+  background: #f0f3fa;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(255, 255, 255, 0.5);
+}
+
+.song-page-actions a {
+  padding: 13px 24px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.song-page-actions a:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.song-page-pagination {
+  max-width: 1200px;
+  margin: 40px auto 0 auto;
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 22px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.song-page-pagination a {
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.song-page-pagination a:hover {
+  color: #ffffff;
+}
+
+@keyframes detail-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 900px) {
+  .song-page {
+    padding: 20px 20px 140px;
+  }
+  .song-page-content {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    margin: 30px auto;
+  }
+  .detail-record-stage {
+    width: 260px;
+    margin: 0 auto;
+  }
+  .song-page-info {
+    padding: 28px 24px;
+  }
+}

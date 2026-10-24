@@ -4,3 +4,6 @@
 .fallback-disc { position:absolute; top:50%; left:50%; width:min(43vw,62vh); aspect-ratio:1; border-radius:50%; border:2px solid #a6a7ac; background-size:cover; transform:translate(-50%,-50%) rotate(-28deg) scaleX(.78); mask-image:radial-gradient(circle,transparent 0 9%,black 9.5%); }
 .fallback-disc span {position:absolute;inset:39%;border-radius:50%;border:12px solid #afb4c0;}
 @media(max-width:700px){.fallback-disc {width:85vw;} }
+.fallback-disc {transition:width .4s ease;}
+.fallback-disc--minimized {width:min(27.5vw,40vh);}
+@media(max-width:700px){.fallback-disc--minimized {width:54vw;}}

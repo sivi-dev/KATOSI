@@ -1,0 +1,9 @@
+.music-note-orbit {position:absolute;inset:-12%;pointer-events:none;opacity:0;transition:opacity .4s ease;animation:note-orbit-turn 22s linear infinite;animation-play-state:paused;z-index:2;}
+.music-note-orbit--playing {opacity:.78;animation-play-state:running;}
+.music-note-position {position:absolute;width:28px;height:32px;translate:-50% -50%;}
+.music-note-symbol {display:block;width:100%;height:100%;animation:note-orbit-counterturn 22s linear infinite;animation-play-state:paused;}
+.music-note-orbit--playing .music-note-symbol {animation-play-state:running;}
+@keyframes note-orbit-turn {to {rotate:360deg;}}
+@keyframes note-orbit-counterturn {to {rotate:-360deg;}}
+@media(max-width:700px){.music-note-position {width:21px;height:25px;}}
+@media(prefers-reduced-motion:reduce){.music-note-orbit,.music-note-symbol {animation:none!important;}}
