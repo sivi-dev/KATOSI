@@ -21,6 +21,8 @@
 .track-index-panel {box-shadow:0 15px 60px #301b3524;}
 .track-index-panel::backdrop {background:#301b3529;}
 .index-heading {background:var(--color-aubergine);color:var(--color-pearl);border-bottom:2px solid var(--color-marigold);}
+.index-collection-tag {display:inline-flex;align-items:center;gap:6px;color:var(--color-silver);}
+.index-brand-mark {width:12px;height:12px;border-radius:50%;object-fit:contain;display:inline-block;}
 .index-heading>div>span {color:var(--color-silver);}
 .index-heading>button:hover {color:var(--color-marigold);}
 .index-record-selected {color:var(--color-pearl);}

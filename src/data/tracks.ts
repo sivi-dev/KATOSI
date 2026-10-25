@@ -40,7 +40,7 @@ export const TRACKS: Track[] = [
     composer: 'Vishal–Shekhar',
     lyricist: 'Amitabh Bhattacharya',
     label: 'Sony Music India',
-    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/16/61/f8/1661f8e0-7d25-0f4e-a50e-5338808dfdbb/886444396479.jpg/1200x1200bb.jpg',
+    artworkUrl: '/covers/zehnaseeb.jpg',
     artworkSourceUrl: 'https://music.apple.com/in/album/zehnaseeb/783487038?i=783487058&uo=4',
     youtubeVideoId: 'WnU0lH6C0EA',
     fallbackVideoId: 'bC36d8e3b-E',
@@ -87,8 +87,8 @@ export const TRACKS: Track[] = [
         statValue: 'Soprano & Baritone'
       },
       {
-        id: 'master',
-        badge: '05 / MASTER',
+        id: 'legacy',
+        badge: '05 / LEGACY',
         title: '24-Bit Studio Master',
         preview: 'Recorded at YRF Studios, mixed with dynamic headroom for vinyl.',
         fullText: 'Mastered with expansive dynamic range, preserving the gentle pick scrapes on steel guitar strings and the natural room resonance of Chinmayi’s vocal microphone capsule.',
@@ -106,7 +106,7 @@ export const TRACKS: Track[] = [
     composer: 'Pritam',
     lyricist: 'Sayeed Quadri',
     label: 'Sony Music India',
-    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/91/38/c3/9138c3d7-941c-3298-49c4-1286f4216bbc/888880945457.jpg/1200x1200bb.jpg',
+    artworkUrl: '/covers/in-dino.jpg',
     artworkSourceUrl: 'https://music.apple.com/in/album/in-dino/302523807?i=302523872&uo=4',
     youtubeVideoId: 'wuWGPFBgM_g',
     fallbackVideoId: 'Kz9q0kUeFzI',
@@ -119,47 +119,47 @@ export const TRACKS: Track[] = [
       {
         id: 'cinema',
         badge: '01 / CINEMA',
-        title: 'Urban Solitude in Mumbai',
-        preview: 'Anurag Basu integrates the on-screen rock band into Mumbai’s trainlines.',
-        fullText: 'Pritam and his Metro band appear physically within the urban tapestry—rooftops, skywalks, and railway platforms—serenading three generations of tangled relationships through the neon-soaked night.',
-        statLabel: 'Setting',
-        statValue: 'Mumbai Skywalks'
+        title: 'Life in a... Metro',
+        preview: 'A city, a moment, a memory.',
+        fullText: 'In Life in a... Metro, Anurag Basu integrates Pritam and the Metro band directly into Mumbai’s nocturnal transit tapestry—on rooftops, skywalks, and platforms—framing three generations of tangled urban relationships.',
+        statLabel: 'Film Canvas',
+        statValue: 'Life in a... Metro'
       },
       {
         id: 'harmony',
         badge: '02 / HARMONY',
-        title: 'Indie Rock Meets Sufi Ballad',
-        preview: 'Overdriven rock guitars harmonizing over soft piano arpeggios.',
-        fullText: 'The foundation rests on a delayed clean electric guitar riff backed by warm Rhodes electric piano and driving kick drums, channeling 90s alt-rock melancholy infused with Indian melodic contours.',
+        title: 'A melody that stays',
+        preview: 'Notes on the arrangement.',
+        fullText: 'The arrangement balances driving rock percussion with clean, chorus-drenched electric guitar arpeggios and warm Fender Rhodes chords, creating a bittersweet acoustic-electric dynamic that remains unforgettable.',
         statLabel: 'Arrangement',
         statValue: 'Live Rock Ensemble'
       },
       {
         id: 'poetry',
         badge: '03 / POETRY',
-        title: 'The Solitary Confession',
-        preview: 'Sayeed Quadri chronicles the modern city-dweller’s longing.',
-        fullText: '"Tu khwaab saja, tu jee le zara..." Quadri captures the courage required to open one’s heart in an indifferent metropolis. Every couplet reflects the bittersweet ache of stolen moments.',
-        statLabel: 'Metaphor',
-        statValue: 'Urban Reverie'
+        title: 'Between the lines',
+        preview: 'Explore the song’s words.',
+        fullText: '"Tu khwaab saja, tu jee le zara..." Sayeed Quadri crafts an earnest meditation on loneliness and sudden intimacy, capturing the quiet courage required to love in an indifferent metropolis.',
+        statLabel: 'Lyricist',
+        statValue: 'Sayeed Quadri'
       },
       {
         id: 'vocals',
         badge: '04 / VOCALS',
-        title: 'Soham’s Breakthrough Cry',
-        preview: 'Raspy, emotive timbre that came to define late-2000s Bollywood rock.',
-        fullText: 'Soham Chakraborty’s performance blends classical vocal control with the raw vulnerability of an indie frontman, especially in the soaring chorus where his high notes cut cleanly through distorted chords.',
+        title: 'Soham Chakraborty',
+        preview: 'The voice behind In Dino.',
+        fullText: 'Soham Chakraborty’s performance blends classical precision with the raw, emotional rasp of alternative rock, soaring with authentic vulnerability on the high-octave chorus.',
         statLabel: 'Lead Vocals',
         statValue: 'Soham Chakraborty'
       },
       {
-        id: 'master',
-        badge: '05 / MASTER',
-        title: 'The Metro Band Legacy',
-        preview: 'The rare Bollywood album to win awards performed by a real touring unit.',
-        fullText: 'Life in a... Metro created a cultural watershed, proving that a live rock band concept could carry an entire film soundtrack to multi-platinum physical disc status.',
-        statLabel: 'Album Sales',
-        statValue: 'Multi-Platinum'
+        id: 'legacy',
+        badge: '05 / LEGACY',
+        title: 'The lasting feeling',
+        preview: 'Your notes on this record.',
+        fullText: 'A defining cultural touchstone of late-2000s Bollywood alternative music, establishing how a live on-screen rock band format could produce multi-platinum physical disc status and enduring cultural devotion.',
+        statLabel: 'Collection',
+        statValue: 'Cultural Landmark'
       }
     ]
   },
@@ -172,7 +172,7 @@ export const TRACKS: Track[] = [
     composer: 'Vishal Bhardwaj',
     lyricist: 'Gulzar',
     label: 'T-Series / Shemaroo',
-    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/51/62/24/5162249a-75a8-fd57-9aec-6ce9f3aa6c46/8902894685887_cover.jpg/1200x1200bb.jpg',
+    artworkUrl: '/covers/dil-to-bachcha-hai.jpg',
     artworkSourceUrl: 'https://music.apple.com/in/album/dil-to-bachcha-hai/1131043351?i=1131043354&uo=4',
     youtubeVideoId: 'AtnB0DbuFFU',
     fallbackVideoId: 'hQ3dcgFKPIY',
@@ -219,8 +219,8 @@ export const TRACKS: Track[] = [
         statValue: 'Rahat Fateh Ali Khan'
       },
       {
-        id: 'master',
-        badge: '05 / MASTER',
+        id: 'legacy',
+        badge: '05 / LEGACY',
         title: 'Analog Warmth & Live Room',
         preview: 'Captured with vintage ribbon microphones to preserve wooden acoustic tone.',
         fullText: 'The acoustic bass and accordion were recorded simultaneously in an ambient live room, giving the low-end resonance a physical weight that glows through compact disc playback.',
@@ -238,7 +238,7 @@ export const TRACKS: Track[] = [
     composer: 'A.R. Rahman',
     lyricist: 'Irshad Kamil',
     label: 'Sony Music India',
-    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/9e/72/a0/9e72a0e7-eb6f-e576-47b1-2ae26a007dac/886444018869.jpg/1200x1200bb.jpg',
+    artworkUrl: '/covers/nazar-laaye.jpg',
     artworkSourceUrl: 'https://music.apple.com/in/album/nazar-laaye/656015920?i=656016011&uo=4',
     youtubeVideoId: '1YyQ0wuD0jw',
     fallbackVideoId: 'xP3p3sF8mHQ',
@@ -285,8 +285,8 @@ export const TRACKS: Track[] = [
         statValue: 'Acoustic Harmonies'
       },
       {
-        id: 'master',
-        badge: '05 / MASTER',
+        id: 'legacy',
+        badge: '05 / LEGACY',
         title: 'Panchathan Record Inn Sound',
         preview: 'Pristine digital audio engineering from Rahman’s Chennai headquarters.',
         fullText: 'Engineered at Panchathan Record Inn with Rahman’s signature spatial separation, ensuring every nylon string pluck occupies its own distinct stereo panorama.',
@@ -304,7 +304,7 @@ export const TRACKS: Track[] = [
     composer: 'Pritam',
     lyricist: 'Irshad Kamil',
     label: 'Tips Official',
-    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/43/fb/d8/43fbd870-9a3b-ccd9-8866-2a2c6dc48287/8901854003792.jpg/1200x1200bb.jpg',
+    artworkUrl: '/covers/tu-jaane-na.jpg',
     artworkSourceUrl: 'https://music.apple.com/in/album/tu-jaane-na/1537029617?i=1537030272&uo=4',
     youtubeVideoId: '53l2DkivxJs',
     fallbackVideoId: 'gR9z-O9FwY8',
@@ -351,8 +351,8 @@ export const TRACKS: Track[] = [
         statValue: 'Atif Aslam'
       },
       {
-        id: 'master',
-        badge: '05 / MASTER',
+        id: 'legacy',
+        badge: '05 / LEGACY',
         title: 'Chart-Topper of 2009',
         preview: 'One of the most downloaded caller tunes and radio staples in Indian history.',
         fullText: 'Topped Mirchi Top 20 for 16 consecutive weeks and cemented Tips Official’s compact disc catalog as an era-defining pop monument.',
@@ -370,7 +370,7 @@ export const TRACKS: Track[] = [
     composer: 'Sajid–Wajid',
     lyricist: 'Jalees Sherwani',
     label: 'T-Series',
-    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/d7/1f/56/d71f5669-03dc-e787-7999-6be9112c8601/8902894688765_cover.jpg/1200x1200bb.jpg',
+    artworkUrl: '/covers/chori-kiya-re-jiya.jpg',
     artworkSourceUrl: 'https://music.apple.com/in/album/chori-kiya-re-jiya/1123346616?i=1123346657&uo=4',
     youtubeVideoId: 'd09R1K9wkl4',
     fallbackVideoId: 'Kz9q0kUeFzI',
@@ -417,8 +417,8 @@ export const TRACKS: Track[] = [
         statValue: 'Sonu & Shreya'
       },
       {
-        id: 'master',
-        badge: '05 / MASTER',
+        id: 'legacy',
+        badge: '05 / LEGACY',
         title: 'The Dabangg Audio Juggernaut',
         preview: 'The soundtrack that revitalized pure melodic Indian film music in 2010.',
         fullText: 'Won the Filmfare Best Music Director Award and proved that authentic Indian melody remained the supreme commercial force in subcontinent cinema.',
@@ -436,7 +436,7 @@ export const TRACKS: Track[] = [
     composer: 'Vishal Mishra',
     lyricist: 'Raj Shekhar',
     label: 'YRF',
-    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/06/a4/20/06a420d5-6378-ff20-8cb6-612ef7e70262/Tum_Ho_Toh_Audio_Cover.jpg/1200x1200bb.jpg',
+    artworkUrl: '/covers/tum-ho-toh.jpg',
     artworkSourceUrl: 'https://music.apple.com/in/album/tum-ho-toh-from-saiyaara/1820715703?i=1820715704&uo=4',
     youtubeVideoId: 'rOUuGvJkBrQ',
     fallbackVideoId: 'u7_jF8WwAzk',
@@ -483,8 +483,8 @@ export const TRACKS: Track[] = [
         statValue: 'Grit & Ethereal'
       },
       {
-        id: 'master',
-        badge: '05 / MASTER',
+        id: 'legacy',
+        badge: '05 / LEGACY',
         title: 'Hi-Res 96kHz Digital Capture',
         preview: 'Pristine 2025 YRF Studios high-resolution audio session recording.',
         fullText: 'Engineered for modern high-fidelity streaming and vinyl pressings, retaining full high-frequency sparkle on cymbals and breathing room in the vocal track.',
@@ -502,7 +502,7 @@ export const TRACKS: Track[] = [
     composer: 'Shankar–Ehsaan–Loy',
     lyricist: 'Niranjan Iyengar',
     label: 'Sony Music India',
-    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/49/32/5a/49325a52-e5e5-bb10-62f6-eebb211ce423/886446889825.jpg/1200x1200bb.jpg',
+    artworkUrl: '/covers/tere-naina.jpg',
     artworkSourceUrl: 'https://music.apple.com/in/album/tere-naina/1569776324?i=1569776328&uo=4',
     youtubeVideoId: 'Km5AQkh58DU',
     fallbackVideoId: '7XqP3s8zM-Q',
@@ -549,8 +549,8 @@ export const TRACKS: Track[] = [
         statValue: 'Patiala Gharana'
       },
       {
-        id: 'master',
-        badge: '05 / MASTER',
+        id: 'legacy',
+        badge: '05 / LEGACY',
         title: 'Global Cinematic Benchmark',
         preview: 'Celebrated worldwide upon the film’s premiere at the Berlin Film Festival.',
         fullText: 'The song was praised by international critics for its balance of traditional classical depth and Hollywood-grade orchestral production value.',
@@ -568,7 +568,7 @@ export const TRACKS: Track[] = [
     composer: 'Pritam',
     lyricist: 'Irshad Kamil',
     label: 'T-Series',
-    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/f3/d9/23/f3d92398-118c-10c9-2ef8-5f28cff344c2/8902894688512_cover.jpg/1200x1200bb.jpg',
+    artworkUrl: '/covers/pee-loon.jpg',
     artworkSourceUrl: 'https://music.apple.com/in/album/pee-loon/1123340727?i=1123340746&uo=4',
     youtubeVideoId: 'D8XFTglfSMg',
     fallbackVideoId: 'qQ2Y3fK7N9M',
@@ -615,8 +615,8 @@ export const TRACKS: Track[] = [
         statValue: 'Husky Mountain Tenor'
       },
       {
-        id: 'master',
-        badge: '05 / MASTER',
+        id: 'legacy',
+        badge: '05 / LEGACY',
         title: 'The Song of the Year 2010',
         preview: 'Dominant airplay leader across all national FM stations throughout 2010.',
         fullText: 'Pee Loon became one of the most covered, requested, and cherished romantic ballads in modern Bollywood physical disc history.',
@@ -634,7 +634,7 @@ export const TRACKS: Track[] = [
     composer: 'Raju Singh',
     lyricist: 'Kumaar',
     label: 'Sony Music India',
-    artworkUrl: 'https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/77/4d/9f/774d9f5c-830a-c140-f1ae-6e637dc9af14/888880931542.jpg/1200x1200bb.jpg',
+    artworkUrl: '/covers/soniyo.jpg',
     artworkSourceUrl: 'https://music.apple.com/in/album/soniyo/299122148?i=299122166&uo=4',
     youtubeVideoId: 'N57zVA-cRUM',
     fallbackVideoId: 'X9tq0kK8R1e',
@@ -681,8 +681,8 @@ export const TRACKS: Track[] = [
         statValue: 'Falsetto & Murki'
       },
       {
-        id: 'master',
-        badge: '05 / MASTER',
+        id: 'legacy',
+        badge: '05 / LEGACY',
         title: 'Gothic Cinema Disc Legacy',
         preview: 'The standout physical CD single of the Vishesh Films franchise.',
         fullText: 'Remains an enduring staple of late-2000s Bollywood CD collections, celebrated for its spatial mixing and sparkling acoustic fidelity.',

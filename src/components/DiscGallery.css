@@ -7,3 +7,19 @@
 .fallback-disc {transition:width .4s ease;}
 .fallback-disc--minimized {width:min(27.5vw,40vh);}
 @media(max-width:700px){.fallback-disc--minimized {width:54vw;}}
+
+.fallback-disc--branched {
+  top: 74% !important;
+  left: 50% !important;
+  width: min(520px, 44vw) !important;
+  transform: translate(-50%, -50%) rotate(0deg) scaleX(1) !important;
+}
+
+@media (max-width: 768px) {
+  .fallback-disc--branched {
+    top: 72% !important;
+    left: 50% !important;
+    width: 260px !important;
+    transform: translate(-50%, -50%) rotate(0deg) scaleX(1) !important;
+  }
+}

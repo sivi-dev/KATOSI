@@ -44,11 +44,12 @@
   opacity: 0.75;
 }
 
-.song-page-nav > span:nth-child(2) {
-  font-family: var(--font-display, 'Syne', sans-serif);
-  font-size: 18px;
-  letter-spacing: 0.16em;
-  font-weight: 800;
+.song-page-logo {
+  height: 26px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.4));
 }
 
 .song-page-nav > span:last-child {

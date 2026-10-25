@@ -44,11 +44,25 @@
 }
 
 .now-playing-dock--collapsed {
-  width: 240px;
+  width: 260px;
 }
 
 .now-playing-dock--collapsed .dock-body {
-  display: none;
+  display: flex !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+  border: 0 !important;
+}
+
+.now-playing-dock--collapsed .dock-controls-area,
+.now-playing-dock--collapsed .dock-alert {
+  display: none !important;
 }
 
 /* Header Bar */
@@ -69,6 +83,29 @@
 
 .dock-music-icon {
   color: var(--dock-accent, #e8a526);
+}
+
+.dock-brand-mark {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  object-fit: contain;
+  display: block;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  transition: transform 0.4s ease;
+}
+
+@keyframes dockSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.dock-brand-mark--spinning {
+  animation: dockSpin 10s linear infinite;
 }
 
 .dock-header-title {

@@ -1,38 +1,58 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import type { Track, BranchCard } from '../data/tracks';
-import { X, Sparkles, BookOpen, ChevronRight, Music } from 'lucide-react';
+import { X, Play, Pause } from 'lucide-react';
 import './BranchingCanopy.css';
 
 interface BranchingCanopyProps {
   track: Track;
   isOpen: boolean;
+  isClosing?: boolean;
   onClose: () => void;
   accentColor?: string;
+  isPlaying?: boolean;
+  onTogglePlay?: () => void;
+}
+
+interface CardLayoutItem {
+  branch: BranchCard;
+  index: number;
+  x: number;
+  y: number;
+  rotation: number;
+  startX: number;
+  startY: number;
+  unfoldDelay: number;
+  floatDelay: number;
+  zIndex: number;
 }
 
 export const BranchingCanopy: React.FC<BranchingCanopyProps> = ({
   track,
   isOpen,
+  isClosing = false,
   onClose,
-  accentColor = '#e8a526'
+  accentColor = '#E8A526',
+  isPlaying = false,
+  onTogglePlay
 }) => {
   const [selectedBranch, setSelectedBranch] = useState<BranchCard | null>(null);
-  const [windowDimensions, setWindowDimensions] = useState(() => ({
-    width: typeof window !== 'undefined' ? window.innerWidth : 1200,
-    height: typeof window !== 'undefined' ? window.innerHeight : 800
+  const [dimensions, setDimensions] = useState(() => ({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1440,
+    height: typeof window !== 'undefined' ? window.innerHeight : 900
   }));
 
   const branches = track.branches || [];
 
+  // Track window size for synchronized responsive layout
   useEffect(() => {
     const handleResize = () => {
-      setWindowDimensions({ width: window.innerWidth, height: window.innerHeight });
+      setDimensions({ width: window.innerWidth, height: window.innerHeight });
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Close full modal reader on Esc key
+  // Keyboard accessibility: dismiss modal reader or close notes on Esc
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -47,113 +67,227 @@ export const BranchingCanopy: React.FC<BranchingCanopyProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, selectedBranch, onClose]);
 
+  // Compute synchronized semicircular fan layout for 5 cards following the CD's upper rim
+  const layout = useMemo(() => {
+    const { width, height } = dimensions;
+    const isMobile = width < 768;
+    const isTablet = width >= 768 && width < 1100;
+
+    // CD Radius matching OrthographicCamera scale in lower-center branches mode:
+    const baseRadius = isMobile
+      ? Math.min(width * 0.34, height * 0.24)
+      : Math.min(width * 0.175, height * 0.295);
+    const cdRadius = isMobile ? baseRadius * 1.05 : baseRadius * 1.15;
+
+    // Card sizes calibrated so 5 cards fit naturally in a semicircular fan without crowding
+    const cardWidth = isMobile
+      ? 220
+      : isTablet
+        ? 168
+        : Math.min(184, Math.max(165, width * 0.125));
+
+    const cardHeight = isMobile
+      ? 185
+      : isTablet
+        ? 168
+        : Math.min(182, Math.max(165, height * 0.20));
+
+    if (isMobile) {
+      return {
+        isMobile: true,
+        isTablet: false,
+        cdRadius,
+        cardWidth,
+        cardHeight,
+        cards: [] as CardLayoutItem[]
+      };
+    }
+
+    // Radial distances from CD center to the card centers
+    // Small uniform gap between final card bottom and CD rim (~16-22px)
+    const gap = 18;
+    const Ry = cdRadius + gap + cardHeight * 0.50;
+    const Rx = cdRadius + gap + cardHeight * 0.52 + (isTablet ? 15 : 28);
+
+    // 5 Semicircular fan positions crowning the upper half of the CD:
+    // 0: Far Left (Cinema) - angle: -48°, rotation: -24°
+    // 1: Mid Left (Harmony) - angle: -24°, rotation: -12°
+    // 2: Center Top (Poetry) - angle: 0°, rotation: 0°
+    // 3: Mid Right (Vocals) - angle: +24°, rotation: +12°
+    // 4: Far Right (Legacy) - angle: +48°, rotation: +24°
+    const fanAnglesDeg = [-48, -24, 0, 24, 48];
+    const fanRotationsDeg = [-24, -12, 0, 12, 24];
+    // Center-outward unfolding delays (~70ms stagger, unfolding like a peacock fan)
+    const unfoldDelaysMs = [700, 630, 560, 630, 700];
+    const floatDelaysSec = [0.4, 0.2, 0, 0.2, 0.4];
+    const zIndices = [8, 9, 10, 9, 8];
+
+    const cards: CardLayoutItem[] = branches.slice(0, 5).map((branch, index) => {
+      const angleDeg = fanAnglesDeg[index];
+      const rad = (angleDeg * Math.PI) / 180;
+      const rotation = fanRotationsDeg[index];
+
+      // Settle position (center of card relative to CD center)
+      const x = Rx * Math.sin(rad);
+      const y = -Ry * Math.cos(rad);
+
+      // Start position for unfold animation (from just behind the upper rim)
+      const rimR = cdRadius * 0.88;
+      const startX = rimR * Math.sin(rad * 0.6);
+      const startY = -rimR * Math.cos(rad * 0.6);
+
+      return {
+        branch,
+        index,
+        x,
+        y,
+        rotation,
+        startX,
+        startY,
+        unfoldDelay: unfoldDelaysMs[index],
+        floatDelay: floatDelaysSec[index],
+        zIndex: zIndices[index]
+      };
+    });
+
+    return {
+      isMobile: false,
+      isTablet,
+      cdRadius,
+      cardWidth,
+      cardHeight,
+      cards
+    };
+  }, [dimensions, branches]);
+
   if (!isOpen) return null;
-
-  // Polar positioning angles for 5 cards: 27° angular step ensures at least ~40px gap between cards
-  // Total span is 108° (from -54° to +54°), creating a magnificent non-overlapping crown
-  const angles = [-54, -27, 0, 27, 54];
-
-  // Dynamic radius based on viewport height, ensuring the arch fits with generous margins
-  const radius = Math.min(Math.max(440, windowDimensions.height * 0.58), 530);
 
   return (
     <div
-      className="branching-canopy-overlay"
-      style={{ ['--canopy-accent' as any]: accentColor }}
+      className={`katosi-notes-view ${isClosing ? 'katosi-notes-view--closing' : ''}`}
+      style={{ ['--notes-accent' as any]: accentColor }}
       role="region"
-      aria-label={`Branching story canopy for ${track.title}`}
+      aria-label={`Expanded song notes for ${track.title}`}
     >
-      {/* Background Soft Dimmer */}
-      <div className="canopy-backdrop" onClick={onClose} aria-hidden="true" />
+      {/* Deep Aubergine / Midnight Navy Atmosphere */}
+      <div className="notes-aubergine-aura" aria-hidden="true" />
+      <div className="notes-backdrop-dismiss" onClick={onClose} aria-hidden="true" />
 
-      {/* Canopy Header & Close Bar */}
-      <div className="canopy-controls-bar">
-        <div className="canopy-badge">
-          <Sparkles size={14} className="canopy-badge-icon" />
-          <span>STORY BRANCHES · {track.title.toUpperCase()}</span>
-        </div>
-        <button
-          type="button"
-          className="canopy-close-pill"
-          onClick={onClose}
-          aria-label="Close story branches"
-        >
-          <span>Close Branches</span>
-          <X size={15} />
-        </button>
-      </div>
+      {layout.isMobile ? (
+        /* Mobile Layout: CD on top with carousel cards below */
+        <div className="notes-mobile-stage">
+          <div className="notes-mobile-center-meta">
+            <h2 className="notes-center-title">{track.title}</h2>
+            <p className="notes-center-artist">{track.artists.join(', ')} · {track.albumOrFilm}</p>
+            {onTogglePlay && (
+              <button
+                type="button"
+                className="notes-center-play-btn"
+                onClick={onTogglePlay}
+                aria-label={isPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
+              >
+                {isPlaying ? <Pause size={14} fill="#ffffff" /> : <Play size={14} fill="#ffffff" className="play-icon-shim" />}
+              </button>
+            )}
+          </div>
 
-      {/* Radial Fan / Arch Canopy Container anchored from center footer */}
-      <div className="canopy-arch-stage">
-        {/* SVG Curved Filaments: Delicately branching from CD hub at footer up to each card */}
-        <svg className="canopy-filaments-svg" aria-hidden="true" viewBox="0 0 1000 780" preserveAspectRatio="xMidYMax meet">
-          <defs>
-            <linearGradient id="branchBeam" x1="50%" y1="100%" x2="50%" y2="0%">
-              <stop offset="0%" stopColor="#E6CA85" stopOpacity="0.85" />
-              <stop offset="50%" stopColor="#FFFDF7" stopOpacity="0.45" />
-              <stop offset="100%" stopColor={accentColor} stopOpacity="0.2" />
-            </linearGradient>
-            <filter id="branchGlow">
-              <feGaussianBlur stdDeviation="2.5" result="glow" />
-              <feMerge>
-                <feMergeNode in="glow" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-          {/* 5 Organic Beziers originating from CD hub at center footer (500, 740) */}
-          <path d="M 500,740 C 440,660 180,620 80,510" stroke="url(#branchBeam)" strokeWidth="1.6" fill="none" filter="url(#branchGlow)" />
-          <path d="M 500,740 C 460,590 320,480 264,360" stroke="url(#branchBeam)" strokeWidth="1.6" fill="none" filter="url(#branchGlow)" />
-          <path d="M 500,740 C 500,560 500,420 500,295" stroke="url(#branchBeam)" strokeWidth="2.0" fill="none" filter="url(#branchGlow)" />
-          <path d="M 500,740 C 540,590 680,480 736,360" stroke="url(#branchBeam)" strokeWidth="1.6" fill="none" filter="url(#branchGlow)" />
-          <path d="M 500,740 C 560,660 820,620 920,510" stroke="url(#branchBeam)" strokeWidth="1.6" fill="none" filter="url(#branchGlow)" />
-        </svg>
-
-        {/* Fanned Arch of Cards: Guaranteed proper margin between cards (zero overlap) */}
-        <div className="canopy-cards-arc">
-          {branches.map((branch, i) => {
-            const angle = angles[i] ?? 0;
-            const rad = (angle * Math.PI) / 180;
-            // Polar coordinates with origin at the CD hub in the center footer
-            const x = Math.sin(rad) * radius;
-            const y = -Math.cos(rad) * radius;
-            const rot = angle * 0.70; // Elegant tangential tilt matching classical fan reference
-
-            return (
+          <div className="notes-mobile-carousel">
+            {branches.map((branch) => (
               <article
                 key={branch.id}
-                className="canopy-branch-card liquid-glass-slab"
-                style={{
-                  transform: `translate(${x}px, ${y}px) rotate(${rot}deg)`,
-                  animationDelay: `${i * 65}ms`
-                }}
+                className="notes-glass-card notes-glass-card--mobile"
                 onClick={() => setSelectedBranch(branch)}
               >
-                {/* Signature Specular Corner Lens Flare Glints */}
-                <span className="glass-glint-tl" aria-hidden="true" />
-                <span className="glass-glint-br" aria-hidden="true" />
-
-                <div className="branch-card-header">
-                  <span className="branch-badge">{branch.badge}</span>
-                  <span className="branch-stat-pill">{branch.statValue}</span>
+                <div className="notes-card-badge-row">
+                  <span className="notes-card-badge">{branch.badge}</span>
                 </div>
-
-                <h3 className="branch-title">{branch.title}</h3>
-                <p className="branch-preview">{branch.preview}</p>
-
-                <div className="branch-card-footer">
-                  <span className="branch-stat-label">{branch.statLabel}</span>
-                  <span className="branch-open-action">
-                    Read <ChevronRight size={13} />
+                <h3 className="notes-card-title">{branch.title}</h3>
+                <p className="notes-card-preview">{branch.preview}</p>
+                <div className="notes-card-footer">
+                  <span className="notes-card-read-action">
+                    Read ↗
                   </span>
                 </div>
               </article>
-            );
-          })}
-        </div>
-      </div>
+            ))}
+          </div>
 
-      {/* Detailed Story Reader Modal (When a card in the arch is clicked) */}
+          <div className="notes-mobile-hint" aria-hidden="true">
+            Swipe cards to explore · Tap Read ↗ for story
+          </div>
+        </div>
+      ) : (
+        /* Desktop & Tablet Lower-Center Composition */
+        <div className="notes-ellipse-stage">
+          {/* Five Semicircular Fan Glass Cards - Unfolds from behind CD rim */}
+          <div className="notes-cards-container">
+            {layout.cards.map((item) => {
+              const { branch, x, y, rotation, startX, startY, unfoldDelay, floatDelay, zIndex } = item;
+              return (
+                <article
+                  key={branch.id}
+                  className={`notes-glass-card ${isClosing ? 'notes-glass-card--closing' : ''}`}
+                  style={{
+                    width: `${layout.cardWidth}px`,
+                    height: `${layout.cardHeight}px`,
+                    marginLeft: `${-layout.cardWidth / 2}px`,
+                    marginTop: `${-layout.cardHeight / 2}px`,
+                    zIndex,
+                    ['--settle-x' as any]: `${x}px`,
+                    ['--settle-y' as any]: `${y}px`,
+                    ['--settle-rot' as any]: `${rotation}deg`,
+                    ['--unfold-start-x' as any]: `${startX}px`,
+                    ['--unfold-start-y' as any]: `${startY}px`,
+                    ['--unfold-delay' as any]: `${unfoldDelay}ms`,
+                    ['--float-delay' as any]: `${floatDelay}s`,
+                  }}
+                  onClick={() => setSelectedBranch(branch)}
+                >
+                  <div className="notes-card-badge-row">
+                    <span className="notes-card-badge">{branch.badge}</span>
+                  </div>
+
+                  <h3 className="notes-card-title">{branch.title}</h3>
+                  <p className="notes-card-preview">{branch.preview}</p>
+
+                  <div className="notes-card-footer">
+                    <span className="notes-card-read-action">
+                      Read ↗
+                    </span>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+
+          {/* Lower Center Song Title, Artist Metadata & Play/Pause Button - Safely inside viewport */}
+          <div className="notes-center-metadata">
+            <div className="notes-brand-badge">
+              <img src="/brand/katosi-mark.png" alt="" className="notes-brand-icon" />
+              <span>KATOSI ARCHIVE</span>
+            </div>
+            <h2 className="notes-center-title">{track.title}</h2>
+            <p className="notes-center-artist">{track.artists.join(', ')} · {track.albumOrFilm}</p>
+            {onTogglePlay && (
+              <button
+                type="button"
+                className="notes-center-play-btn"
+                onClick={onTogglePlay}
+                aria-label={isPlaying ? `Pause ${track.title}` : `Play ${track.title}`}
+                title={isPlaying ? 'Pause song' : 'Play song'}
+              >
+                {isPlaying ? (
+                  <Pause size={14} fill="#ffffff" />
+                ) : (
+                  <Play size={14} fill="#ffffff" className="play-icon-shim" />
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Detailed Story Reader Modal (When Read ↗ is clicked) */}
       {selectedBranch && (
         <div
           className="branch-modal-overlay"
@@ -163,60 +297,43 @@ export const BranchingCanopy: React.FC<BranchingCanopyProps> = ({
           aria-labelledby="branch-modal-title"
         >
           <div
-            className="branch-modal-sheet liquid-glass-slab"
+            className="branch-modal-sheet"
             onClick={(e) => e.stopPropagation()}
           >
-            <span className="glass-glint-tl" aria-hidden="true" />
-            <span className="glass-glint-br" aria-hidden="true" />
-
             <div className="branch-modal-header">
               <div className="branch-modal-tag">
-                <Music size={14} />
+                <img src="/brand/katosi-mark.png" alt="" className="modal-brand-mark" />
                 <span>{track.title} · {selectedBranch.badge}</span>
               </div>
               <button
                 type="button"
                 className="branch-modal-close"
                 onClick={() => setSelectedBranch(null)}
-                aria-label="Close chapter reader"
+                aria-label="Close story reader"
               >
-                <X size={16} />
+                <X size={18} />
               </button>
             </div>
 
-            <h2 id="branch-modal-title" className="branch-modal-heading">
-              {selectedBranch.title}
-            </h2>
-
-            <div className="branch-modal-meta-row">
-              <div className="branch-meta-item">
-                <span className="branch-meta-k">{selectedBranch.statLabel}</span>
-                <span className="branch-meta-v">{selectedBranch.statValue}</span>
-              </div>
-              <div className="branch-meta-item">
-                <span className="branch-meta-k">Album / Film</span>
-                <span className="branch-meta-v">{track.albumOrFilm} ({track.year})</span>
-              </div>
-            </div>
+            <h3 id="branch-modal-title" className="branch-modal-title">{selectedBranch.title}</h3>
 
             <div className="branch-modal-body">
-              <p className="branch-modal-p">{selectedBranch.fullText}</p>
-              {track.featuredQuote && (
-                <blockquote className="branch-modal-quote">
-                  “{track.featuredQuote}”
-                </blockquote>
-              )}
+              <p>{selectedBranch.fullText}</p>
+            </div>
+
+            <div className="branch-modal-stat-pill">
+              <span className="stat-pill-label">{selectedBranch.statLabel}</span>
+              <span className="stat-pill-value">{selectedBranch.statValue}</span>
             </div>
 
             <div className="branch-modal-footer">
-              <span className="branch-modal-hint">Press Esc or click outside to dismiss</span>
+              <span className="modal-esc-hint">Press Esc or click outside to dismiss</span>
               <button
                 type="button"
                 className="branch-modal-done-btn"
                 onClick={() => setSelectedBranch(null)}
               >
-                <BookOpen size={14} />
-                <span>Back to Canopy</span>
+                Done
               </button>
             </div>
           </div>

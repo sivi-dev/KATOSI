@@ -23,88 +23,59 @@
   justify-content: center;
 }
 
-/* Live Flowing Ambient Gradient Canvas */
-.live-gradient-stage {
+/* ==========================================================================
+   Pinterest Silk Motion Background (https://pin.it/38FUIAfqF)
+   ========================================================================== */
+
+.motion-background-container {
   position: fixed;
-  inset: -15%;
-  width: 130%;
-  height: 130%;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   pointer-events: none;
-  z-index: 1;
+  z-index: 0;
   overflow: hidden;
-  filter: blur(85px);
-  opacity: 0.65;
-  transition: opacity 1.2s ease;
+  background-color: #030814;
 }
 
-.live-gradient-orb {
-  position: absolute;
-  border-radius: 50%;
-  mix-blend-mode: screen;
-}
-
-.live-gradient-orb--1 {
-  width: 60vw;
-  height: 60vw;
-  top: 15%;
-  left: 20%;
-  background: radial-gradient(circle, var(--active-accent, #e8a526) 0%, rgba(232, 165, 38, 0.28) 45%, transparent 70%);
-  animation: liveDriftOne 22s ease-in-out infinite alternate;
-}
-
-.live-gradient-orb--2 {
-  width: 50vw;
-  height: 50vw;
-  bottom: 12%;
-  right: 18%;
-  background: radial-gradient(circle, #5e35b1 0%, rgba(94, 53, 177, 0.24) 48%, transparent 70%);
-  animation: liveDriftTwo 28s ease-in-out infinite alternate;
-}
-
-.live-gradient-orb--3 {
-  width: 44vw;
-  height: 44vw;
-  top: 38%;
-  right: 28%;
-  background: radial-gradient(circle, #0288d1 0%, rgba(2, 136, 209, 0.18) 50%, transparent 70%);
-  animation: liveDriftThree 18s ease-in-out infinite alternate;
-}
-
-.live-gradient-aurora {
+.motion-background-video {
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    115deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.03) 30%,
-    rgba(232, 165, 38, 0.06) 50%,
-    transparent 70%
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  filter: brightness(0.68) contrast(1.18) saturate(1.1);
+  transform: scale(1.04);
+  transition: opacity 1s ease;
+}
+
+/* Subtle chromatic wash reflecting active track accent */
+.motion-background-tint {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 40%,
+    var(--active-accent, #e8a526) 0%,
+    transparent 65%
   );
-  animation: liveAuroraFlow 16s ease-in-out infinite alternate;
+  mix-blend-mode: color-dodge;
+  opacity: 0.22;
+  transition: background 1.2s ease, opacity 0.8s ease;
+  pointer-events: none;
 }
 
-@keyframes liveDriftOne {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(12%, 16%) scale(1.15); }
-  100% { transform: translate(-8%, 10%) scale(0.95); }
-}
-
-@keyframes liveDriftTwo {
-  0% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(-14%, -14%) scale(1.12); }
-  100% { transform: translate(10%, -6%) scale(0.92); }
-}
-
-@keyframes liveDriftThree {
-  0% { transform: translate(0, 0) scale(0.9); }
-  50% { transform: translate(-10%, 12%) scale(1.2); }
-  100% { transform: translate(14%, -10%) scale(1); }
-}
-
-@keyframes liveAuroraFlow {
-  0% { opacity: 0.3; transform: rotate(0deg) scale(1); }
-  50% { opacity: 0.65; transform: rotate(8deg) scale(1.08); }
-  100% { opacity: 0.3; transform: rotate(-5deg) scale(1); }
+/* Luxury Cinema Vignette Frame */
+.motion-background-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 45%,
+    rgba(3, 6, 12, 0.45) 75%,
+    rgba(2, 4, 8, 0.88) 100%
+  );
+  pointer-events: none;
 }
 
 /* Dynamic Volumetric Background Glow */
@@ -156,19 +127,19 @@
 /* Mirror Floor Reflection & Ground Contact Shadow under CD */
 .disc-floor-reflection {
   position: absolute;
-  bottom: calc(50% - min(22vw, 320px) - 20px);
-  left: 50%;
+  bottom: calc(50% - min(16vw, 190px) - 10px);
+  left: calc(50% + 1.5vw);
   transform: translateX(-50%);
-  width: min(44vw, 640px);
-  height: 60px;
+  width: min(30vw, 400px);
+  height: 44px;
   border-radius: 50%;
   background: radial-gradient(
     ellipse at center,
-    rgba(255, 255, 255, 0.12) 0%,
-    rgba(197, 200, 208, 0.04) 40%,
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(197, 200, 208, 0.02) 40%,
     transparent 70%
   );
-  filter: blur(8px);
+  filter: blur(10px);
   pointer-events: none;
   z-index: 14;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
@@ -178,8 +149,8 @@
 .track-card-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-top: 18px;
+  gap: 10px;
+  margin-top: 14px;
 }
 
 .glass-play-btn {
@@ -187,8 +158,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 13px 22px;
+  gap: 6px;
+  padding: 8px 14px;
+  white-space: nowrap;
   border-radius: 999px;
   background: linear-gradient(
     135deg,
@@ -203,7 +175,7 @@
     inset 0 1px 1px rgba(255, 255, 255, 0.45),
     0 8px 24px rgba(0, 0, 0, 0.35);
   color: #ffffff;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   cursor: pointer;
@@ -252,33 +224,45 @@
   line-height: 1;
 }
 
-/* Hero Credits tucked state when Branching Canopy is open */
-.track-credits--tucked {
-  transform: translateX(-90px) scale(0.9);
-  opacity: 0;
-  pointer-events: none;
-  filter: blur(4px);
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+/* Hero Credits tucked state when Expanded Notes View is open */
+.track-credits {
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
-.disc-floor-reflection--footer {
-  bottom: 25px !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  width: min(32vw, 360px) !important;
-  height: 36px !important;
-  opacity: 0.8 !important;
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+.track-credits--tucked {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateX(-30px) scale(0.96) !important;
+}
+
+.record-navigation,
+.archive-footer {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.collection-stage--branched .record-navigation,
+.collection-stage--branched .archive-footer {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transform: translateY(14px) !important;
+}
+
+.disc-floor-reflection--footer,
+.disc-floor-reflection--branched {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity 0.3s ease;
 }
 
 .track-detail-link {
   flex: 0 0 auto;
-  padding: 13px 20px;
+  padding: 8px 14px;
+  white-space: nowrap;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.25);
   color: #ffffff;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
@@ -350,10 +334,43 @@
 /* Responsive adjustments */
 @media (max-width: 900px) {
   .collection-stage {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    overflow-x: hidden !important;
     overflow-y: auto;
     height: auto;
     min-height: 100vh;
     padding-bottom: 120px;
+  }
+  /* When expanded notes / story branches is open, lock stage full-bleed without overflow */
+  .collection-stage.collection-stage--branched {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    min-height: 100vh !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    z-index: 30;
+  }
+  .collection-stage--branched .gallery-stage-container {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    margin: 0 !important;
+  }
+  .collection-stage--branched .track-credits {
+    display: none !important;
+  }
+  .collection-stage--branched .record-navigation {
+    display: none !important;
+  }
+  .collection-stage--branched .archive-footer {
+    display: none !important;
   }
   .track-credits {
     position: relative;
@@ -387,3 +404,4 @@
     text-align: center;
   }
 }
+

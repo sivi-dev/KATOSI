@@ -82,7 +82,9 @@ export const CompactDisc: React.FC<CompactDiscProps> = ({
             <div className="cd-fallback-artwork">
               <div className="cd-fallback-pattern" />
               <div className="cd-fallback-text">
-                <span className="cd-fallback-brand">KATOSI</span>
+                <span className="cd-fallback-brand">
+                  <img src="/brand/katosi-logo.png" alt="KATOSI" className="cd-brand-logo" />
+                </span>
                 <span className="cd-fallback-title">{track.title}</span>
                 <span className="cd-fallback-artist">{track.artists[0]}</span>
               </div>

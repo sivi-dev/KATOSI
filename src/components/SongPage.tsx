@@ -7,7 +7,7 @@ interface Props {
 }
 export function SongPage({track,index,tracks,isPlaying,onPlay,onBack,onOpenTrack}:Props){
   return <main className="song-page">
-    <header className="song-page-nav"><a href="/" onClick={event=>{event.preventDefault();onBack();}}>← Back to collection</a><span>KATOSI</span><span>{String(index+1).padStart(2,'0')} / {String(tracks.length).padStart(2,'0')}</span></header>
+    <header className="song-page-nav"><a href="/" onClick={event=>{event.preventDefault();onBack();}}>← Back to collection</a><img src="/brand/katosi-logo.png" alt="KATOSI" className="song-page-logo" /><span>{String(index+1).padStart(2,'0')} / {String(tracks.length).padStart(2,'0')}</span></header>
     <div className="song-page-content">
       <div className="song-page-artwork">
         <div className="detail-record-stage">

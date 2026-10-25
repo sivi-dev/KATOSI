@@ -17,7 +17,7 @@ export function TrackIndex({isOpen,onClose,tracks,browsingIndex,playingIndex,isP
   }}>
     <span className="glass-glint-tl" aria-hidden="true" />
     <span className="glass-glint-br" aria-hidden="true" />
-    <header className="index-heading"><div><span>THE KATOSI COLLECTION</span><h2 id="track-index-title">The index.</h2></div><button onClick={onClose} aria-label="Close track index" autoFocus>×</button></header>
+    <header className="index-heading"><div><span className="index-collection-tag"><img src="/brand/katosi-mark.png" alt="" className="index-brand-mark" />THE KATOSI COLLECTION</span><h2 id="track-index-title">The index.</h2></div><button onClick={onClose} aria-label="Close track index" autoFocus>×</button></header>
     <ol className="index-records">
       {tracks.map((track,index)=><li key={track.id} className={index===browsingIndex?'index-record-selected':''}>
         <button className="index-browse" onClick={()=>{onSelectTrack(index,false);onClose();}} aria-label={`Browse ${track.title}`} aria-current={index===browsingIndex?'true':undefined}>

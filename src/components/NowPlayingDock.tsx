@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAudio } from '../context/AudioContext';
-import { Play, Pause, SkipBack, SkipForward, ExternalLink, AlertCircle, ChevronDown, ChevronUp, Music2, Tv } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, ExternalLink, AlertCircle, ChevronDown, ChevronUp, Tv } from 'lucide-react';
 import './NowPlayingDock.css';
 
-export const NowPlayingDock: React.FC = () => {
+interface NowPlayingDockProps {
+  isBranched?: boolean;
+}
+
+export const NowPlayingDock: React.FC<NowPlayingDockProps> = ({ isBranched = false }) => {
   const {
     playingTrack,
     playbackState,
@@ -22,8 +26,15 @@ export const NowPlayingDock: React.FC = () => {
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
   const [showVideo, setShowVideo] = useState<boolean>(true);
 
-  useEffect(() => { if (playingTrack) setIsExpanded(true); }, [playingTrack]);
-  useEffect(() => { if (isPlaying) setIsExpanded(true); }, [isPlaying]);
+  // Auto minimize when branches open, but allow user manual toggle
+  useEffect(() => {
+    if (isBranched) {
+      setIsExpanded(false);
+    }
+  }, [isBranched]);
+
+  useEffect(() => { if (playingTrack && !isBranched) setIsExpanded(true); }, [playingTrack, isBranched]);
+  useEffect(() => { if (isPlaying && !isBranched) setIsExpanded(true); }, [isPlaying, isBranched]);
 
   const formatTime = (seconds: number) => {
     if (!seconds || isNaN(seconds)) return '0:00';
@@ -44,14 +55,14 @@ export const NowPlayingDock: React.FC = () => {
       hidden={!playingTrack}
       style={{ ['--dock-accent' as any]: playingTrack?.accentColor || '#e8a526' }}
     >
-      {/* Signature Specular Corner Lens Flare Glints */}
-      <span className="glass-glint-tl" aria-hidden="true" />
-      <span className="glass-glint-br" aria-hidden="true" />
-
       {/* Header Bar */}
       <div className="dock-header">
         <div className="dock-header-left">
-          <Music2 size={14} className="dock-music-icon" />
+          <img
+            src="/brand/katosi-mark.png"
+            alt=""
+            className={`dock-brand-mark ${playbackState === 'playing' ? 'dock-brand-mark--spinning' : ''}`}
+          />
           <span className="dock-header-title">NOW PLAYING</span>
           {playbackState === 'playing' ? (
             <span className="dock-live-eq" aria-label="Audio active">
@@ -78,7 +89,7 @@ export const NowPlayingDock: React.FC = () => {
           <button
             type="button"
             className="dock-tool-btn"
-            onClick={() => { if (isExpanded && isPlaying) togglePlayPause(); setIsExpanded(!isExpanded); }}
+            onClick={() => setIsExpanded(!isExpanded)}
             aria-label={isExpanded ? 'Collapse player dock' : 'Expand player dock'}
             title={isExpanded ? 'Collapse player' : 'Expand player'}
           >

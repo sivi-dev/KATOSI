@@ -19,6 +19,7 @@ function MusicCollection() {
   const [browsingIndex, setBrowsingIndex] = useState<number>(initialIndex);
   const [minimizedIndex, setMinimizedIndex] = useState<number | null>(() => (initialSongId ? initialIndex : null));
   const [isBranched, setIsBranched] = useState<boolean>(() => initialSongId !== null);
+  const [isClosingBranches, setIsClosingBranches] = useState<boolean>(false);
   const [reducedMotion, setReducedMotion] = useState<boolean>(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
   const track = audio.tracks[browsingIndex] || audio.tracks[0];
@@ -34,22 +35,29 @@ function MusicCollection() {
     playSong(selected, index);
   }, [playSong]);
 
-  // In-Place Branching Canopy: Minimizes CD and opens overhead arch of cards on the same page
+  // In-Place Branching Canopy: Smooth animated transition into lower-center notes layout
   const openBranchCanopy = useCallback((index: number) => {
+    if (isClosingBranches) return;
     setBrowsingIndex(index);
     setMinimizedIndex(index);
     setIsBranched(true);
+    setIsClosingBranches(false);
     const selected = audio.tracks[index];
     if (selected) {
       window.history.pushState({}, '', `/songs/${selected.id}`);
     }
-  }, [audio.tracks]);
+  }, [audio.tracks, isClosingBranches]);
 
   const closeBranchCanopy = useCallback(() => {
-    setIsBranched(false);
-    setMinimizedIndex(null);
+    if (isClosingBranches) return;
+    setIsClosingBranches(true);
     window.history.pushState({}, '', '/');
-  }, []);
+    setTimeout(() => {
+      setIsBranched(false);
+      setIsClosingBranches(false);
+      setMinimizedIndex(null);
+    }, 1100);
+  }, [isClosingBranches]);
 
   // Listen to browser Back/Forward navigation
   useEffect(() => {
@@ -108,34 +116,51 @@ function MusicCollection() {
         ['--active-accent' as any]: track.accentColor || '#e8a526'
       }}
     >
-      {/* Live Animated Flowing Gradient Canvas Background */}
-      <div className="live-gradient-stage" aria-hidden="true">
-        <div className="live-gradient-orb live-gradient-orb--1" />
-        <div className="live-gradient-orb live-gradient-orb--2" />
-        <div className="live-gradient-orb live-gradient-orb--3" />
-        <div className="live-gradient-aurora" />
+      {/* Pinterest Silk Motion Background Video (https://pin.it/38FUIAfqF) */}
+      <div className="motion-background-container" aria-hidden="true">
+        <video
+          className="motion-background-video"
+          src="/motion-bg.mp4"
+          poster="/motion-bg.jpg"
+          autoPlay
+          loop
+          muted
+          playsInline
+        />
+        {/* Subtle chromatic tone reflecting active track accent & luxury cinema vignette */}
+        <div className="motion-background-tint" />
+        <div className="motion-background-vignette" />
       </div>
 
-      {/* Dynamic Background Volumetric Light & Optical Ambient Glow */}
+      {/* Optical Ambient Accent Glow */}
       <div className="ambient-stage-glow" aria-hidden="true" />
-      <div className="ambient-radial-spot" aria-hidden="true" />
       <div className="paper-grain" aria-hidden="true" />
 
-      <main className="collection-stage" aria-label="KATOSI music collection">
+      <main className={`collection-stage ${isBranched ? 'collection-stage--branched' : ''}`} aria-label="KATOSI music collection">
         {/* Floating Top Glass Navigation */}
         <header className="archive-nav" aria-label="Main navigation">
           <a className="archive-wordmark" href="/" onClick={(e) => { e.preventDefault(); if (isBranched) closeBranchCanopy(); }} aria-label="KATOSI home">
-            <span className="editorial-mark" aria-hidden="true" />
-            KATOSI
+            <img src="/brand/katosi-logo.png" alt="KATOSI" className="katosi-header-logo" />
           </a>
           <div className="editorial-nav-links">
-            <button
-              type="button"
-              onClick={() => (isBranched ? closeBranchCanopy() : openBranchCanopy(browsingIndex))}
-            >
-              {isBranched ? 'Close Branches ✕' : 'Song Branches ↗'}
-            </button>
-            <span>Sound Reflects You</span>
+            {isBranched ? (
+              <button
+                type="button"
+                className="canopy-close-pill-nav"
+                onClick={closeBranchCanopy}
+                aria-label="Close notes"
+              >
+                Close notes ✕
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => openBranchCanopy(browsingIndex)}
+              >
+                Song Branches ↗
+              </button>
+            )}
+            <span className="archive-tagline">SOUND REFLECTS YOU</span>
           </div>
         </header>
 
@@ -145,10 +170,6 @@ function MusicCollection() {
           className={`track-credits liquid-glass-slab ${isBranched ? 'track-credits--tucked' : ''}`}
           aria-label={`Details for ${track.title}`}
         >
-          {/* Signature Corner Lens Flare Glints */}
-          <span className="glass-glint-tl" aria-hidden="true" />
-          <span className="glass-glint-br" aria-hidden="true" />
-
           <div className="track-credits-tag">
             <span>RECORD {String(browsingIndex + 1).padStart(2, '0')} / {String(audio.tracks.length).padStart(2, '0')}</span>
             <span>{track.label.toUpperCase()}</span>
@@ -239,19 +260,23 @@ function MusicCollection() {
               onMinimizeTrack={setMinimizedIndex}
               minimizedIndex={minimizedIndex}
               isBranched={isBranched}
+              isClosingBranches={isClosingBranches}
             />
           </Suspense>
 
-          {/* In-Place Branching Arch Canopy: Radiates overhead in an arc, crowning the minimized CD */}
+          {/* Expanded Song Notes / Semicircular Fan Layout around Lower-Center CD */}
           <BranchingCanopy
             track={track}
             isOpen={isBranched}
+            isClosing={isClosingBranches}
             onClose={closeBranchCanopy}
             accentColor={track.accentColor}
+            isPlaying={isSelectedPlaying}
+            onTogglePlay={() => selectTrack(track, browsingIndex)}
           />
 
           {/* 3D Glass Mirror Reflection Floor beneath the CD */}
-          <div className={`disc-floor-reflection ${isBranched ? 'disc-floor-reflection--footer' : ''}`} aria-hidden="true" />
+          <div className={`disc-floor-reflection ${isBranched ? 'disc-floor-reflection--branched' : ''}`} aria-hidden="true" />
         </div>
 
         {/* Bottom Floating Glass Navigation Pill */}
@@ -284,14 +309,17 @@ function MusicCollection() {
         {/* Footer Hints */}
         <footer className="archive-footer">
           <span className="archive-instructions">
-            Drag to browse · Space or Click to listen · Double-click CD for story branches <span>↗</span>
+            Drag to explore · Click CD to listen · Double-click for notes
           </span>
-          <span className="archive-signature">KATOSI · Sound Reflects You</span>
+          <span className="archive-signature">
+            <img src="/brand/katosi-mark.png" alt="" className="footer-brand-mark" />
+            KATOSI · SOUND REFLECTS YOU
+          </span>
         </footer>
       </main>
 
       {/* Floating Compliant YouTube Player Dock with 16:9 Video Canvas and Tactile Equalizer Controls */}
-      <NowPlayingDock />
+      <NowPlayingDock isBranched={isBranched} />
     </div>
   );
 }
