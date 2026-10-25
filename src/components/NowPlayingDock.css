@@ -1,5 +1,6 @@
 /* ==========================================================================
    KATOSI — Ultra-Tactile Liquid Glass Now Playing Dock Styles
+   Studio Master Audio Experience (Restriction-Free Direct Local Playback)
    ========================================================================== */
 
 .now-playing-dock {
@@ -13,15 +14,16 @@
   background: linear-gradient(
     135deg,
     rgba(255, 255, 255, 0.08) 0%,
-    rgba(16, 18, 26, 0.88) 45%,
-    rgba(10, 12, 18, 0.96) 100%
+    rgba(16, 18, 26, 0.90) 45%,
+    rgba(10, 12, 18, 0.97) 100%
   );
   border: 1px solid rgba(255, 255, 255, 0.16);
   box-shadow:
-    0 20px 50px rgba(0, 0, 0, 0.65),
+    0 24px 60px rgba(0, 0, 0, 0.70),
     0 0 0 1px rgba(255, 255, 255, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.25);
   backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
   color: #f3f5fa;
   animation: dockRise 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s ease;
@@ -61,6 +63,7 @@
 }
 
 .now-playing-dock--collapsed .dock-controls-area,
+.now-playing-dock--collapsed .dock-platter-showcase,
 .now-playing-dock--collapsed .dock-alert {
   display: none !important;
 }
@@ -79,10 +82,6 @@
   display: flex;
   gap: 9px;
   align-items: center;
-}
-
-.dock-music-icon {
-  color: var(--dock-accent, #e8a526);
 }
 
 .dock-brand-mark {
@@ -162,7 +161,30 @@
 .dock-header-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+/* Studio Master HD Audio Pill */
+.dock-badge-hd {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 100px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #d1d5e0;
+}
+
+.dock-badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px #10b981;
 }
 
 .dock-tool-btn {
@@ -185,11 +207,6 @@
   transform: scale(1.05);
 }
 
-.dock-tool-btn--active {
-  color: var(--dock-accent, #e8a526);
-  border-color: var(--dock-accent, #e8a526);
-}
-
 /* Dock Body */
 .dock-body {
   padding: 16px;
@@ -198,42 +215,188 @@
   gap: 14px;
 }
 
-/* Video Iframe Wrapper (16:9 Cinema Aspect Ratio) */
-.dock-iframe-wrapper {
+/* Studio Platter Showcase Container */
+.dock-platter-showcase {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #000000;
+  height: 145px;
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(255, 255, 255, 0.06) 0%,
+    rgba(10, 12, 18, 0.85) 100%
+  );
   border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding-left: 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.dock-iframe-wrapper iframe {
+/* Album Sleeve Frame */
+.dock-sleeve-frame {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+  z-index: 2;
+  flex-shrink: 0;
+  background: #0f1118;
+}
+
+.dock-sleeve-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
-  width: 100% !important;
-  height: 100% !important;
-  border: 0;
 }
 
-/* Minimized Video (Audio-Only Mode) */
-.dock-iframe-wrapper--minimized {
-  height: 0 !important;
-  aspect-ratio: unset !important;
-  opacity: 0.01;
+.dock-sleeve-sheen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
   pointer-events: none;
-  margin: 0;
-  border: 0;
-  padding: 0;
+}
+
+/* Protruding 3D Spinning Compact Disc */
+.dock-cd-disc {
+  position: absolute;
+  left: 90px;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background: #141721;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.55),
+    0 0 0 1.5px rgba(220, 224, 235, 0.7);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
+  transition: transform 0.3s ease;
+}
+
+.dock-cd-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  opacity: 0.92;
+}
+
+/* Realistic CD Grooves */
+.dock-cd-grooves {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  background: repeating-radial-gradient(
+    circle at center,
+    transparent 0px,
+    transparent 2px,
+    rgba(255, 255, 255, 0.05) 3px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+  pointer-events: none;
+}
+
+/* Specular Light Reflection */
+.dock-cd-sheen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 45deg,
+    rgba(255, 255, 255, 0.18) 0deg,
+    transparent 60deg,
+    rgba(255, 255, 255, 0.25) 120deg,
+    transparent 180deg,
+    rgba(255, 255, 255, 0.18) 240deg,
+    transparent 300deg,
+    rgba(255, 255, 255, 0.25) 360deg
+  );
+  pointer-events: none;
+}
+
+/* Center Spindle Hole */
+.dock-cd-spindle {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #0d0f15;
+  border: 3px solid rgba(220, 224, 235, 0.85);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8);
+  z-index: 3;
+}
+
+.dock-cd-disc--spinning {
+  animation: dockSpin 6s linear infinite;
+}
+
+/* Dynamic Frequency Visualizer (Right of Platter) */
+.dock-freq-visualizer {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 38px;
+  z-index: 3;
+}
+
+.dock-freq-bar {
+  width: 3px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.2);
+  transition: height 0.2s ease, background 0.3s ease;
+}
+
+.dock-freq-bar--active {
+  background: var(--dock-accent, #e8a526);
+  animation: freqPulse 0.7s ease-in-out infinite alternate;
+}
+
+@keyframes freqPulse {
+  0% {
+    height: 4px;
+    opacity: 0.4;
+  }
+  50% {
+    height: 24px;
+    opacity: 0.8;
+  }
+  100% {
+    height: 36px;
+    opacity: 1;
+  }
 }
 
 /* Alerts */
 .dock-alert {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   font-size: 11px;
   line-height: 1.45;
@@ -244,30 +407,8 @@
   color: #ffd8a8;
 }
 
-.dock-alert--error {
-  background: rgba(255, 80, 80, 0.12);
-  border-color: rgba(255, 80, 80, 0.3);
-  color: #ffc2c2;
-}
-
 .dock-alert svg {
   flex-shrink: 0;
-  margin-top: 2px;
-}
-
-.dock-alert-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.dock-error-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: #ffffff;
-  text-decoration: underline;
-  font-weight: 600;
 }
 
 /* Controls Area */
@@ -275,22 +416,6 @@
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
-
-.dock-track-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.dock-track-thumb {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  object-fit: cover;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  flex-shrink: 0;
 }
 
 .dock-track-info {
@@ -302,7 +427,7 @@
 
 .dock-track-title {
   font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: #ffffff;
   white-space: nowrap;
@@ -312,7 +437,7 @@
 }
 
 .dock-track-sub {
-  font-size: 11.5px;
+  font-size: 12px;
   color: #9aa1b5;
   white-space: nowrap;
   overflow: hidden;
@@ -337,7 +462,6 @@
   flex: 1;
   height: 4px;
   border-radius: 2px;
-  background: rgba(255, 255, 255, 0.12);
   accent-color: var(--dock-accent, #e8a526);
   cursor: pointer;
   outline: none;
@@ -361,8 +485,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.06);
@@ -384,8 +508,8 @@
 
 /* High-Impact Tactile Play Button */
 .dock-ctrl-btn--play {
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
   background: var(--dock-accent, #e8a526);
   border: 1px solid rgba(255, 255, 255, 0.4);
   color: #0b0c10;
@@ -412,20 +536,27 @@
   100% { box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 24px var(--dock-accent, #e8a526); }
 }
 
+/* External Video Link Pill */
 .dock-yt-link {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  color: #7b8398;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 100px;
+  color: #9aa1b5;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  text-decoration: none;
   transition: all 0.2s ease;
 }
 
 .dock-yt-link:hover {
   color: #ffffff;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
 }
 
 @media (max-width: 700px) {

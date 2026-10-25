@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAudio } from '../context/AudioContext';
-import { Play, Pause, SkipBack, SkipForward, ExternalLink, AlertCircle, ChevronDown, ChevronUp, Tv } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, ExternalLink, ChevronDown, ChevronUp, Disc3 } from 'lucide-react';
 import './NowPlayingDock.css';
 
 interface NowPlayingDockProps {
@@ -10,11 +10,9 @@ interface NowPlayingDockProps {
 export const NowPlayingDock: React.FC<NowPlayingDockProps> = ({ isBranched = false }) => {
   const {
     playingTrack,
-    playbackState,
     isPlaying,
     isPlayerReady,
     autoplayBlocked,
-    errorMessage,
     currentTime,
     duration,
     togglePlayPause,
@@ -24,17 +22,19 @@ export const NowPlayingDock: React.FC<NowPlayingDockProps> = ({ isBranched = fal
   } = useAudio();
 
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
-  const [showVideo, setShowVideo] = useState<boolean>(true);
 
-  // Auto minimize when branches open, but allow user manual toggle
+  // Auto-minimize when branches open to avoid overlapping note cards, while keeping audio playing
   useEffect(() => {
     if (isBranched) {
       setIsExpanded(false);
     }
   }, [isBranched]);
 
-  useEffect(() => { if (playingTrack && !isBranched) setIsExpanded(true); }, [playingTrack, isBranched]);
-  useEffect(() => { if (isPlaying && !isBranched) setIsExpanded(true); }, [isPlaying, isBranched]);
+  useEffect(() => {
+    if (playingTrack && !isBranched) {
+      setIsExpanded(true);
+    }
+  }, [playingTrack, isBranched]);
 
   const formatTime = (seconds: number) => {
     if (!seconds || isNaN(seconds)) return '0:00';
@@ -48,12 +48,14 @@ export const NowPlayingDock: React.FC<NowPlayingDockProps> = ({ isBranched = fal
     seekTo(val);
   };
 
+  const accentColor = playingTrack?.accentColor || '#e8a526';
+
   return (
     <aside
       className={`now-playing-dock liquid-glass-slab ${!isExpanded ? 'now-playing-dock--collapsed' : ''} ${!playingTrack ? 'now-playing-dock--idle' : ''}`}
-      aria-label="Now playing audio and video player"
+      aria-label="Now playing audio player"
       hidden={!playingTrack}
-      style={{ ['--dock-accent' as any]: playingTrack?.accentColor || '#e8a526' }}
+      style={{ ['--dock-accent' as any]: accentColor }}
     >
       {/* Header Bar */}
       <div className="dock-header">
@@ -61,10 +63,10 @@ export const NowPlayingDock: React.FC<NowPlayingDockProps> = ({ isBranched = fal
           <img
             src="/brand/katosi-mark.png"
             alt=""
-            className={`dock-brand-mark ${playbackState === 'playing' ? 'dock-brand-mark--spinning' : ''}`}
+            className={`dock-brand-mark ${isPlaying ? 'dock-brand-mark--spinning' : ''}`}
           />
           <span className="dock-header-title">NOW PLAYING</span>
-          {playbackState === 'playing' ? (
+          {isPlaying ? (
             <span className="dock-live-eq" aria-label="Audio active">
               <span className="dock-eq-bar dock-eq-bar--1" />
               <span className="dock-eq-bar dock-eq-bar--2" />
@@ -75,16 +77,10 @@ export const NowPlayingDock: React.FC<NowPlayingDockProps> = ({ isBranched = fal
           )}
         </div>
         <div className="dock-header-actions">
-          {/* Toggle Video Preview Button */}
-          <button
-            type="button"
-            className={`dock-tool-btn ${showVideo ? 'dock-tool-btn--active' : ''}`}
-            onClick={() => setShowVideo(!showVideo)}
-            aria-label={showVideo ? 'Hide video canvas' : 'Show video canvas'}
-            title={showVideo ? 'Hide video frame' : 'Show video frame'}
-          >
-            <Tv size={14} />
-          </button>
+          <span className="dock-badge-hd">
+            <span className="dock-badge-dot" />
+            STUDIO MASTER
+          </span>
           {/* Collapse/Expand Dock Button */}
           <button
             type="button"
@@ -100,63 +96,68 @@ export const NowPlayingDock: React.FC<NowPlayingDockProps> = ({ isBranched = fal
 
       {/* Main Content when expanded */}
       <div className="dock-body">
-        {/* Persistent YouTube Iframe Target Container (Always mounted in DOM for audio continuity) */}
-        <div
-          className={`dock-iframe-wrapper ${!showVideo ? 'dock-iframe-wrapper--minimized' : ''}`}
-          aria-hidden={!showVideo}
-        >
-          <div id="katosi-youtube-iframe-target" />
-        </div>
-
-        {/* Autoplay / Restriction Alert */}
-        {autoplayBlocked && (
-          <div className="dock-alert dock-alert--autoplay" role="alert">
-            <AlertCircle size={15} />
-            <span>Browser blocked autoplay. <strong>Click play</strong> below to start playback.</span>
+        {/* Studio Platter Showcase */}
+        <div className="dock-platter-showcase">
+          <div className="dock-sleeve-frame">
+            {playingTrack?.artworkUrl && (
+              <img
+                src={playingTrack.artworkUrl}
+                alt={playingTrack.title}
+                className="dock-sleeve-art"
+              />
+            )}
+            <div className="dock-sleeve-sheen" />
           </div>
-        )}
 
-        {/* Playback Error Alert */}
-        {errorMessage && (
-          <div className="dock-alert dock-alert--error" role="alert">
-            <AlertCircle size={15} />
-            <div className="dock-alert-text">
-              <span>{errorMessage}</span>
-              {playingTrack?.youtubeUrl && (
-                <a
-                  href={playingTrack.youtubeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="dock-error-link"
-                >
-                  Watch on YouTube <ExternalLink size={12} />
-                </a>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Track Title, Artwork and Controls */}
-        <div className="dock-controls-area">
-          <div className="dock-track-row">
+          {/* Protruding 3D Spinning Compact Disc */}
+          <div className={`dock-cd-disc ${isPlaying ? 'dock-cd-disc--spinning' : ''}`}>
             {playingTrack?.artworkUrl && (
               <img
                 src={playingTrack.artworkUrl}
                 alt=""
-                className="dock-track-thumb"
+                className="dock-cd-art"
               />
             )}
-            <div className="dock-track-info">
-              <span className="dock-track-title">
-                {playingTrack ? playingTrack.title : 'Select a compact disc to play'}
-              </span>
-              <span className="dock-track-sub">
-                {playingTrack ? `${playingTrack.artists.join(', ')}` : 'KATOSI Audio Stream'}
-              </span>
-            </div>
+            <div className="dock-cd-grooves" />
+            <div className="dock-cd-sheen" />
+            <div className="dock-cd-spindle" />
           </div>
 
-          {/* Timeline slider */}
+          {/* Dynamic Frequency Equalizer Visualizer */}
+          <div className="dock-freq-visualizer" aria-hidden="true">
+            {Array.from({ length: 14 }).map((_, i) => (
+              <span
+                key={i}
+                className={`dock-freq-bar ${isPlaying ? 'dock-freq-bar--active' : ''}`}
+                style={{
+                  animationDelay: `${(i * 0.08).toFixed(2)}s`,
+                  animationDuration: `${0.65 + (i % 5) * 0.12}s`
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Autoplay blocked banner */}
+        {autoplayBlocked && (
+          <div className="dock-alert dock-alert--autoplay" role="alert">
+            <Disc3 size={15} />
+            <span>Click <strong>play</strong> below to begin playback.</span>
+          </div>
+        )}
+
+        {/* Track Title & Metadata */}
+        <div className="dock-controls-area">
+          <div className="dock-track-info">
+            <span className="dock-track-title">
+              {playingTrack ? playingTrack.title : 'Select a compact disc to play'}
+            </span>
+            <span className="dock-track-sub">
+              {playingTrack ? `${playingTrack.artists.join(', ')} · ${playingTrack.albumOrFilm}` : 'KATOSI Audio Stream'}
+            </span>
+          </div>
+
+          {/* Timeline Scrubber */}
           {duration > 0 && (
             <div className="dock-timeline">
               <span className="dock-time">{formatTime(currentTime)}</span>
@@ -168,6 +169,9 @@ export const NowPlayingDock: React.FC<NowPlayingDockProps> = ({ isBranched = fal
                 onChange={handleSeek}
                 className="dock-slider"
                 aria-label="Seek track position"
+                style={{
+                  background: `linear-gradient(to right, ${accentColor} 0%, ${accentColor} ${(currentTime / (duration || 1)) * 100}%, rgba(255,255,255,0.15) ${(currentTime / (duration || 1)) * 100}%, rgba(255,255,255,0.15) 100%)`
+                }}
               />
               <span className="dock-time">{formatTime(duration)}</span>
             </div>
@@ -214,10 +218,11 @@ export const NowPlayingDock: React.FC<NowPlayingDockProps> = ({ isBranched = fal
                 target="_blank"
                 rel="noopener noreferrer"
                 className="dock-yt-link"
-                title="Open official video on YouTube"
-                aria-label="Open on YouTube"
+                title="Watch full video on YouTube in a new tab"
+                aria-label="Watch video on YouTube"
               >
-                <ExternalLink size={14} />
+                <span>Video</span>
+                <ExternalLink size={13} />
               </a>
             )}
           </div>

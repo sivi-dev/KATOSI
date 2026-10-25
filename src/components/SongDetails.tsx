@@ -115,7 +115,7 @@ export const SongDetails: React.FC<SongDetailsProps> = ({
           ) : (
             <>
               <Play size={18} fill="currentColor" />
-              <span>{isPausedThis ? 'RESUME PLAYBACK' : 'PLAY ONLINE'}</span>
+              <span>{isPausedThis ? 'RESUME PLAYBACK' : 'PLAY DISC'}</span>
             </>
           )}
         </button>

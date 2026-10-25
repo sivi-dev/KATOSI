@@ -217,12 +217,12 @@ function MusicCollection() {
                     <span className="eq-bar eq-bar--2" />
                     <span className="eq-bar eq-bar--3" />
                   </span>
-                  <span>Pause Record</span>
+                  <span>Pause</span>
                 </>
               ) : (
                 <>
                   <span className="play-triangle-icon" aria-hidden="true">▶</span>
-                  <span>Play Record</span>
+                  <span>Play</span>
                 </>
               )}
             </button>

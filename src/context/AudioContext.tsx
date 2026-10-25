@@ -21,257 +21,192 @@ export interface AudioContextType {
   seekTo: (seconds: number) => void;
 }
 
-declare global {
-  interface Window {
-    onYouTubeIframeAPIReady?: () => void;
-    YT?: {
-      Player: any;
-      PlayerState: {
-        UNSTARTED: number;
-        ENDED: number;
-        PLAYING: number;
-        PAUSED: number;
-        BUFFERING: number;
-        CUED: number;
-      };
-    };
-  }
-}
-
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [playingIndex, setPlayingIndex] = useState<number>(-1);
   const [playbackState, setPlaybackState] = useState<PlaybackState>('unstarted');
-  const [isPlayerReady, setIsPlayerReady] = useState<boolean>(false);
+  const [isPlayerReady, setIsPlayerReady] = useState<boolean>(true);
   const [autoplayBlocked, setAutoplayBlocked] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
 
-  const playerRef = useRef<any>(null);
-  const requestedTrackRef = useRef<{ track: Track; index: number } | null>(null);
-  const timeIntervalRef = useRef<number | null>(null);
-  const triedFallbackRef = useRef<boolean>(false);
+  // Native HTML5 Audio for reliable, restriction-free local playback
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const playingIndexRef = useRef<number>(playingIndex);
   useEffect(() => { playingIndexRef.current = playingIndex; }, [playingIndex]);
 
   const playingTrack = playingIndex >= 0 && playingIndex < TRACKS.length ? TRACKS[playingIndex] : null;
   const isPlaying = playbackState === 'playing';
 
-  const hasRequestedPlayback = playingIndex >= 0;
-
-  // Load the online player only after a visitor selects a record.
+  // Initialize native HTML5 Audio element once
   useEffect(() => {
-    if (!hasRequestedPlayback) return;
-    let isCancelled = false;
+    const audio = new Audio();
+    audio.preload = 'auto';
+    audioRef.current = audio;
 
-    const initPlayer = () => {
-      if (isCancelled) return;
-      if (!window.YT || !window.YT.Player) return;
+    const onPlay = () => {
+      setPlaybackState('playing');
+      setErrorMessage(null);
+      setAutoplayBlocked(false);
+    };
 
-      const playerElement = document.getElementById('katosi-youtube-iframe-target');
-      if (!playerElement || playerRef.current) return;
-
-      try {
-        playerRef.current = new window.YT.Player('katosi-youtube-iframe-target', {
-          height: '200',
-          width: '340',
-          videoId: requestedTrackRef.current?.track.youtubeVideoId,
-          playerVars: {
-            autoplay: 0,
-            controls: 1,
-            rel: 0,
-            modestbranding: 1,
-            playsinline: 1,
-            enablejsapi: 1,
-            origin: window.location.origin
-          },
-          events: {
-            onAutoplayBlocked: () => { if (!isCancelled) {setAutoplayBlocked(true);setPlaybackState('paused');} },
-            onReady: (event: any) => {
-              if (isCancelled) return;
-              setIsPlayerReady(true);
-
-              // If a track was requested before player became ready
-              if (requestedTrackRef.current) {
-                const { track, index } = requestedTrackRef.current;
-                requestedTrackRef.current = null;
-                setPlayingIndex(index);
-                event.target.loadVideoById(track.youtubeVideoId);
-              }
-            },
-            onStateChange: (event: any) => {
-              if (isCancelled) return;
-              const state = event.data;
-              const YTState = window.YT?.PlayerState;
-
-              if (YTState) {
-                if (state === YTState.PLAYING) {
-                  setPlaybackState('playing');
-                  setAutoplayBlocked(false);
-                  setErrorMessage(null);
-                  if (playerRef.current?.getDuration) {
-                    setDuration(playerRef.current.getDuration());
-                  }
-                } else if (state === YTState.PAUSED) {
-                  setPlaybackState('paused');
-                } else if (state === YTState.BUFFERING) {
-                  setPlaybackState('buffering');
-                } else if (state === YTState.ENDED) {
-                  setPlaybackState('ended');
-                  // Advance to next track; stop at end of collection
-                  setPlayingIndex((prevIndex) => {
-                    const nextIndex = prevIndex + 1;
-                    if (nextIndex < TRACKS.length) {
-                      const nextTrack = TRACKS[nextIndex];
-                      if (playerRef.current?.loadVideoById && nextTrack.youtubeVideoId) {
-                        playerRef.current.loadVideoById(nextTrack.youtubeVideoId);
-                        return nextIndex;
-                      }
-                    }
-                    return prevIndex;
-                  });
-                } else if (state === YTState.UNSTARTED) {
-                  setPlaybackState('unstarted');
-                }
-              }
-            },
-            onError: (event: any) => {
-              if (isCancelled) return;
-              const errorCode = event.data;
-              const curTrack = playingIndexRef.current >= 0 && playingIndexRef.current < TRACKS.length ? TRACKS[playingIndexRef.current] : null;
-              if ((errorCode === 101 || errorCode === 150) && curTrack?.fallbackVideoId && !triedFallbackRef.current) {
-                triedFallbackRef.current = true;
-                playerRef.current?.loadVideoById?.(curTrack.fallbackVideoId);
-                return;
-              }
-              let msg = 'Playback error occurred.';
-              if (errorCode === 101 || errorCode === 150) {
-                msg = 'Embedding restricted by owner. You can play directly on YouTube.';
-              } else if (errorCode === 100) {
-                msg = 'Video not found or removed.';
-              } else if (errorCode === 2) {
-                msg = 'Invalid video ID parameter.';
-              }
-              setErrorMessage(msg);
-              setPlaybackState('error');
-            }
-          }
-        });
-      } catch (err) {
-        console.error('Failed to instantiate YouTube Player', err);
+    const onPause = () => {
+      if (audio.currentTime < audio.duration) {
+        setPlaybackState('paused');
       }
     };
 
-    if (window.YT && window.YT.Player) {
-      initPlayer();
-    } else {
-      const existingScript = document.getElementById('katosi-yt-api-script');
-      if (!existingScript) {
-        const tag = document.createElement('script');
-        tag.id = 'katosi-yt-api-script';
-        tag.src = 'https://www.youtube.com/iframe_api';
-        tag.onerror = () => { if (!isCancelled) { setErrorMessage('The online player could not load. Try opening this record on YouTube.');setPlaybackState('error');} };
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode?.insertBefore(tag, firstScriptTag);
-      }
-
-      const prevCallback = window.onYouTubeIframeAPIReady;
-      window.onYouTubeIframeAPIReady = () => {
-        if (prevCallback) prevCallback();
-        initPlayer();
-      };
-    }
-
-    return () => {
-      isCancelled = true;
-      playerRef.current?.destroy?.();
-      playerRef.current = null;
+    const onTimeUpdate = () => {
+      setCurrentTime(audio.currentTime || 0);
     };
-  }, [hasRequestedPlayback]);
 
-  // Poll current playback time when playing
-  useEffect(() => {
-    if (playbackState === 'playing') {
-      timeIntervalRef.current = window.setInterval(() => {
-        if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
-          const time = playerRef.current.getCurrentTime();
-          setCurrentTime(time || 0);
-          const dur = playerRef.current.getDuration?.();
-          if (dur) setDuration(dur);
-        }
-      }, 500);
-    } else {
-      if (timeIntervalRef.current) {
-        clearInterval(timeIntervalRef.current);
-        timeIntervalRef.current = null;
+    const onLoadedMetadata = () => {
+      if (audio.duration && !isNaN(audio.duration)) {
+        setDuration(audio.duration);
       }
-    }
-
-    return () => {
-      if (timeIntervalRef.current) {
-        clearInterval(timeIntervalRef.current);
-      }
+      setIsPlayerReady(true);
     };
-  }, [playbackState]);
 
-  const playTrack = useCallback((track: Track, index: number) => {
-    setErrorMessage(null);
+    const onCanPlay = () => {
+      setIsPlayerReady(true);
+    };
 
-    // If clicking currently active track
-    if (playingIndex === index && playingTrack?.id === track.id) {
-      if (playbackState === 'playing') {
-        playerRef.current?.pauseVideo?.();
-      } else {
-        try {
-          playerRef.current?.playVideo?.();
-        } catch {
-          setAutoplayBlocked(true);
-        }
-      }
-      return;
-    }
+    const onWaiting = () => {
+      setPlaybackState('buffering');
+    };
 
-    // Switching to a new track
-    triedFallbackRef.current = false;
-    setCurrentTime(0);
-    setDuration(0);
-    setAutoplayBlocked(false);
-    setPlayingIndex(index);
+    const onEnded = () => {
+      setPlaybackState('ended');
+      // Advance automatically to next song in collection
+      const nextIndex = (playingIndexRef.current + 1) % TRACKS.length;
+      playTrackInternal(TRACKS[nextIndex], nextIndex);
+    };
 
-    if (!isPlayerReady || !playerRef.current) {
-      requestedTrackRef.current = { track, index };
-      return;
-    }
-
-    if (!track.youtubeVideoId || track.availability === 'unavailable') {
+    const onError = () => {
+      console.warn('Local audio playback notice:', audio.error);
       setPlaybackState('error');
-      setErrorMessage('This song is currently unavailable for online streaming.');
-      return;
-    }
+    };
+
+    audio.addEventListener('play', onPlay);
+    audio.addEventListener('pause', onPause);
+    audio.addEventListener('timeupdate', onTimeUpdate);
+    audio.addEventListener('loadedmetadata', onLoadedMetadata);
+    audio.addEventListener('canplay', onCanPlay);
+    audio.addEventListener('waiting', onWaiting);
+    audio.addEventListener('ended', onEnded);
+    audio.addEventListener('error', onError);
+
+    return () => {
+      audio.pause();
+      audio.removeEventListener('play', onPlay);
+      audio.removeEventListener('pause', onPause);
+      audio.removeEventListener('timeupdate', onTimeUpdate);
+      audio.removeEventListener('loadedmetadata', onLoadedMetadata);
+      audio.removeEventListener('canplay', onCanPlay);
+      audio.removeEventListener('waiting', onWaiting);
+      audio.removeEventListener('ended', onEnded);
+      audio.removeEventListener('error', onError);
+    };
+  }, []);
+
+  // Update MediaSession API for system lock-screen / keyboard media key controls
+  useEffect(() => {
+    if (!('mediaSession' in navigator) || !playingTrack) return;
 
     try {
-      if (typeof playerRef.current.loadVideoById === 'function') {
-        playerRef.current.loadVideoById(track.youtubeVideoId);
-        setPlaybackState('buffering');
-      } else if (typeof playerRef.current.cueVideoById === 'function') {
-        playerRef.current.cueVideoById(track.youtubeVideoId);
-        playerRef.current.playVideo?.();
-      }
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: playingTrack.title,
+        artist: playingTrack.artists.join(', '),
+        album: `${playingTrack.albumOrFilm} (${playingTrack.year})`,
+        artwork: [
+          { src: playingTrack.artworkUrl, sizes: '512x512', type: 'image/jpeg' },
+          { src: playingTrack.artworkUrl, sizes: '256x256', type: 'image/jpeg' },
+          { src: playingTrack.artworkUrl, sizes: '128x128', type: 'image/jpeg' }
+        ]
+      });
+
+      navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+
+      navigator.mediaSession.setActionHandler('play', () => {
+        audioRef.current?.play().catch(console.warn);
+      });
+      navigator.mediaSession.setActionHandler('pause', () => {
+        audioRef.current?.pause();
+      });
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        const prevIdx = playingIndexRef.current <= 0 ? TRACKS.length - 1 : playingIndexRef.current - 1;
+        playTrackInternal(TRACKS[prevIdx], prevIdx);
+      });
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        const nextIdx = (playingIndexRef.current + 1) % TRACKS.length;
+        playTrackInternal(TRACKS[nextIdx], nextIdx);
+      });
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (details.seekTime !== undefined && audioRef.current) {
+          audioRef.current.currentTime = details.seekTime;
+          setCurrentTime(details.seekTime);
+        }
+      });
     } catch (e) {
-      console.warn('Autoplay or loadVideoById error:', e);
-      setAutoplayBlocked(true);
+      console.warn('MediaSession setup note:', e);
     }
-  }, [playingIndex, playingTrack, isPlayerReady, playbackState]);
+  }, [playingTrack, isPlaying]);
+
+  const playTrackInternal = (track: Track, index: number) => {
+    setErrorMessage(null);
+    setAutoplayBlocked(false);
+    setPlayingIndex(index);
+    setCurrentTime(0);
+    setDuration(0);
+
+    const audio = audioRef.current;
+    if (audio) {
+      const srcUrl = track.audioUrl || `/audio/${track.id}.mp3`;
+      audio.src = srcUrl;
+      audio.currentTime = 0;
+      audio.play().then(() => {
+        setPlaybackState('playing');
+      }).catch((err) => {
+        console.warn('Autoplay gesture required:', err);
+        setAutoplayBlocked(true);
+        setPlaybackState('paused');
+      });
+    }
+  };
+
+  const playTrack = useCallback((track: Track, index: number) => {
+    // If clicking currently active track, toggle play/pause
+    if (playingIndex === index && playingTrack?.id === track.id) {
+      const audio = audioRef.current;
+      if (playbackState === 'playing') {
+        audio?.pause();
+        setPlaybackState('paused');
+      } else {
+        audio?.play().then(() => {
+          setPlaybackState('playing');
+        }).catch(() => {
+          setAutoplayBlocked(true);
+        });
+      }
+      return;
+    }
+
+    playTrackInternal(track, index);
+  }, [playingIndex, playingTrack, playbackState]);
 
   const togglePlayPause = useCallback(() => {
-    if (!playerRef.current) return;
-
+    const audio = audioRef.current;
     if (playbackState === 'playing') {
-      playerRef.current.pauseVideo?.();
+      audio?.pause();
+      setPlaybackState('paused');
     } else if (playbackState === 'paused') {
-      playerRef.current.playVideo?.();
+      audio?.play().then(() => {
+        setPlaybackState('playing');
+      }).catch(() => {
+        setAutoplayBlocked(true);
+      });
     } else if (playingIndex === -1 && TRACKS.length > 0) {
       playTrack(TRACKS[0], 0);
     }
@@ -288,8 +223,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [playingIndex, playTrack]);
 
   const seekTo = useCallback((seconds: number) => {
-    if (playerRef.current?.seekTo) {
-      playerRef.current.seekTo(seconds, true);
+    if (audioRef.current) {
+      audioRef.current.currentTime = seconds;
       setCurrentTime(seconds);
     }
   }, []);
@@ -303,8 +238,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         playbackState,
         isPlaying,
         isPlayerReady,
-        autoplayBlocked,
         errorMessage,
+        autoplayBlocked,
         currentTime,
         duration,
         playTrack,

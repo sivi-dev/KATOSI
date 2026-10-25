@@ -244,10 +244,10 @@
    ========================================================================== */
 .track-credits {
   position: absolute;
-  top: 84px;
-  left: 24px;
-  width: 245px;
-  max-width: 22vw;
+  top: 96px;
+  left: 28px;
+  width: 275px;
+  max-width: 25vw;
   padding: 18px 20px 16px 20px;
   background: var(--glass-bg);
   backdrop-filter: blur(28px) saturate(180%);
@@ -350,16 +350,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 12px 20px;
+  gap: 6px;
+  width: auto;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 9px 12px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.12);
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: #ffffff;
-  font-size: 13px;
+  font-size: 11.5px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
   text-decoration: none;
   transition: all 0.25s ease;
   backdrop-filter: blur(12px);
